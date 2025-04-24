@@ -24,7 +24,8 @@ RUN conda config --set solver libmamba
 RUN conda env create --file=/app/MDDB-workflow/envs/environment.yml && conda clean -afy
 
 # Install mwf SW
-RUN conda run -n mwf_env python /app/MDDB-workflow/setup.py develop
+# RUN conda run -n mwf_env python /app/MDDB-workflow/setup.py develop
+RUN conda run -n mwf_env python -m pip install -e
 
 # Export python path
 ENV PYTHONPATH="${PYTHONPATH}:/app/MDDB-workflow"
