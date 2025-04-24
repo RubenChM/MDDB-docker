@@ -74,6 +74,15 @@ An `.env` file must be created in the **root** of the project. The file [**.env.
 | DB_NAME      | string  | name of the  DB collection                          |
 | DB_AUTHSOURCE      | string  | the DB collection the user will attempt to authenticate to                           |
 | &nbsp;
+| DB_BACKUP_VOLUME_PATH         | string  | path where the DB backups will be stored                                        |
+| DB_BACKUP_REPLICAS      | number  | number of replicas to deploy                                    |
+| DB_BACKUP_RETENTION_COUNT         | number  | maximum number of DB backup copies to preserve                                          |
+| DB_BACKUP_INTERVAL         | number  | interval in seconds between DB backups                                         |
+| DB_BACKUP_CPU_LIMIT      | string  | DB backup limit number of CPUs                                    |
+| DB_BACKUP_MEMORY_LIMIT          | string | DB backup limit memory                           |
+| DB_BACKUP_CPU_RESERVATION          | string  | DB backup reserved number of CPUs                           |
+| DB_BACKUP_MEMORY_RESERVATION      | string  | DB backup reserved memory                         |
+| &nbsp;
 | MINIO_VOLUME_PATH1         | string  | path for the volume1 where MinIO will save / retrieve the files                              |
 | MINIO_VOLUME_PATH2         | string  | path for the volume2 where MinIO will save / retrieve the files                              |
 | MINIO_VOLUME_PATH3         | string  | path for the volume3 where MinIO will save / retrieve the files                              |
@@ -348,6 +357,38 @@ services:
         reservations:
           cpus: ${DB_CPU_RESERVATION}   # Specify the reserved number of CPUs
           memory: ${DB_MEMORY_RESERVATION}   # Specify the reserved memory
+      restart_policy:
+        condition: on-failure   # Restart only on failure
+
+  mongo-backup:
+    image: mongo
+    command: >
+      bash -c "sh /backup_script.sh"
+    volumes:
+      - ${DB_BACKUP_VOLUME_PATH}:/backup
+      - ./mongodb/backup_script.sh:/backup_script.sh:ro
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_PORT: ${DB_OUTER_PORT}
+      MONGO_INITDB_DATABASE: ${DB_AUTHSOURCE}
+      DB_HOST: ${DB_SERVER}
+      BACKUP_DIR: /backup
+      RETENTION_COUNT: ${DB_BACKUP_RETENTION_COUNT}
+      BACKUP_INTERVAL: ${DB_BACKUP_INTERVAL}
+    networks:
+      - dbnet
+    depends_on:
+      - mongodb
+    deploy:
+      replicas: ${DB_BACKUP_REPLICAS}
+      resources:
+        limits:
+          cpus: ${DB_BACKUP_CPU_LIMIT}    # Specify the limit number of CPUs
+          memory: ${DB_BACKUP_MEMORY_LIMIT}   # Specify the limit memory
+        reservations:
+          cpus: ${DB_BACKUP_CPU_RESERVATION}   # Specify the reserved number of CPUs
+          memory: ${DB_BACKUP_MEMORY_RESERVATION}   # Specify the reserved memory
       restart_policy:
         condition: on-failure   # Restart only on failure
 

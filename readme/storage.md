@@ -5,6 +5,7 @@ Many storages are needed before building and deploying the docker containers.
 * [Docker](#docker)
 * [MinIO](#minio)
 * [MongoDB](#mongodb)
+* [MongoDB backup](#mongodb-backup)
 * [Workflow](#workflow)
 * [Loader](#loader)
 * [Certificates](#certificates)
@@ -40,6 +41,16 @@ In the **volume** where the data is stored, create the following **/db folder**:
 > /path/to/volume/db
 
 All the **MongoDB** data will be stored inside this volume.
+
+### MongoDB Backup
+
+In the **volume** where the data is stored, create the following **/db_backup folder**:
+
+> /path/to/volume/db_backup
+
+**Note: it's highly recommended to store the backups in a different volume where the MongoDB data is stored, so in case the main volume fails, the backups are safe in another one.** 
+
+All the **MongoDB** data backups will be stored inside this volume.
 
 ## Workflow
 

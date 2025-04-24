@@ -136,6 +136,14 @@ Add two more replicas to my_stack_website:
 docker service scale my_stack_website=4
 ```
 
+## Stop a service:
+
+Stop my_stack_mongo-backup service:
+
+```sh
+docker service rm my_stack_mongo-backup
+```
+
 ## Check service tasks
 
 ```sh

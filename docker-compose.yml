@@ -178,6 +178,38 @@ services:
       restart_policy:
         condition: on-failure   # Restart only on failure
 
+  mongo-backup:
+    image: mongo
+    command: >
+      bash -c "sh /backup_script.sh"
+    volumes:
+      - ${DB_BACKUP_VOLUME_PATH}:/backup
+      - ./mongodb/backup_script.sh:/backup_script.sh:ro
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_PORT: ${DB_OUTER_PORT}
+      MONGO_INITDB_DATABASE: ${DB_AUTHSOURCE}
+      DB_HOST: ${DB_SERVER}
+      BACKUP_DIR: /backup
+      RETENTION_COUNT: ${DB_BACKUP_RETENTION_COUNT}
+      BACKUP_INTERVAL: ${DB_BACKUP_INTERVAL}
+    networks:
+      - dbnet
+    depends_on:
+      - mongodb
+    deploy:
+      replicas: ${DB_BACKUP_REPLICAS}
+      resources:
+        limits:
+          cpus: ${DB_BACKUP_CPU_LIMIT}    # Specify the limit number of CPUs
+          memory: ${DB_BACKUP_MEMORY_LIMIT}   # Specify the limit memory
+        reservations:
+          cpus: ${DB_BACKUP_CPU_RESERVATION}   # Specify the reserved number of CPUs
+          memory: ${DB_BACKUP_MEMORY_RESERVATION}   # Specify the reserved memory
+      restart_policy:
+        condition: on-failure   # Restart only on failure
+
   minio:
     image: minio/minio
     environment:

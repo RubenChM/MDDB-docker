@@ -90,6 +90,10 @@ In some podman implementations, the REST API gave some problems connecting to th
 podman run -d --name mongodb -e MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME} -e MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD} -e MONGO_PORT=${DB_OUTER_PORT} -e MONGO_INITDB_DATABASE=${DB_NAME} -e LOADER_DB_LOGIN=${LOADER_DB_LOGIN} -e LOADER_DB_PASSWORD=${LOADER_DB_PASSWORD} -e REST_DB_LOGIN=${REST_DB_LOGIN} -e REST_DB_PASSWORD=${REST_DB_PASSWORD} -e DB_OUTER_PORT=${DB_OUTER_PORT} -p ${DB_OUTER_PORT}:${DB_OUTER_PORT} -v ${DB_VOLUME_PATH}:/data/db:Z -v $(pwd)/mongodb/mongo-nonroot.sh:/entrypoint.sh:Z --entrypoint /entrypoint.sh -v $(pwd)/mongodb/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro --cpus "${DB_CPU_LIMIT}" --memory "${DB_MEMORY_LIMIT}" --network data_network --ip <IP ADDRESS> --security-opt label=disable docker.io/library/mongo:6
 ```
 
+### MongoDB backup service
+
+TODO
+
 ### REST API
 
 ```sh

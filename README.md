@@ -69,6 +69,10 @@ https://github.com/docker-library/mongo
 
 For this project, the chosen version of **mongo** is **6**.
 
+### Database backup
+
+There is an specific service that performs a complete database backup every so often depending on a variable defined by the user. To disable this service, define **DB_BACKUP_REPLICAS** to 0.
+
 ### Object Storage
 
 In order to provide the users a way to **transfer big files** that can't be uploaded via web, a docker **MinIO** server is integrated into the infrastructure.
