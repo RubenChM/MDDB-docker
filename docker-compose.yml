@@ -195,7 +195,7 @@ services:
       RETENTION_COUNT: ${DB_BACKUP_RETENTION_COUNT}
       BACKUP_INTERVAL: ${DB_BACKUP_INTERVAL}
     networks:
-      - dbnet
+      - data_network
     depends_on:
       - mongodb
     deploy:
