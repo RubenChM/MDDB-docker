@@ -27,6 +27,9 @@ RUN conda env create --file=/app/MDDB-workflow/envs/environment.yml && conda cle
 WORKDIR /app/MDDB-workflow
 RUN conda run -n mwf_env python -m pip install -e .
 
+# Define working dir
+WORKDIR /app
+
 # Export python path
 ENV PYTHONPATH="${PYTHONPATH}:/app/MDDB-workflow"
 
