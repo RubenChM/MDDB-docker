@@ -1,6 +1,12 @@
 # Base docker with miniconda
 FROM docker.io/continuumio/miniconda3:latest
 
+# Define the version of the Docker image
+LABEL version="0.1"
+
+# Connect this docker image to the biobb_workflows repository
+LABEL org.opencontainers.image.source https://github.com/mmb-irb/MDDB-docker
+
 # Define working dir
 WORKDIR /app
 
