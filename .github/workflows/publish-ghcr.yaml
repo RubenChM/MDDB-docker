@@ -1,0 +1,72 @@
+name: Build and Push Containers
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - workflow/Dockerfile
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Login to GitHub Container Registry
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Build and push Docker image
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./workflow
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          labels: |
+            org.opencontainers.image.source=${{ github.repository_url }}
+
+      # Install Singularity
+      - name: Install Singularity
+        run: |
+          sudo apt-get update && sudo apt-get install -y \
+            build-essential \
+            libssl-dev \
+            uuid-dev \
+            libgpgme11-dev \
+            squashfs-tools \
+            libseccomp-dev \
+            wget \
+            pkg-config \
+            git \
+            cryptsetup-bin
+          wget https://github.com/sylabs/singularity/releases/download/v3.11.4/singularity-ce_3.11.4-jammy_amd64.deb
+          sudo dpkg -i singularity-ce_3.11.4-jammy_amd64.deb
+
+      # Convert Docker to Singularity and push
+      - name: Build and push Singularity image
+        run: |
+          # Pull the Docker image we just built
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          
+          # Convert to Singularity
+          singularity build image.sif docker://${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          
+          # Login to GHCR with Singularity
+          echo ${{ secrets.GITHUB_TOKEN }} | singularity remote login --username ${{ github.actor }} --password-stdin ${{ env.REGISTRY }}
+          
+          # Push to GHCR (note: GHCR expects Docker images, so we push as a Docker image)
+          singularity push image.sif oras://${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-sif
