@@ -37,7 +37,7 @@ jobs:
         with:
           context: ./workflow
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          tags: ${{ env.REGISTRY }}/mmb-irb/${{ env.IMAGE_NAME }}:latest
           labels: |
             org.opencontainers.image.source=${{ github.repository_url }}
 
