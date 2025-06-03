@@ -9,6 +9,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
+  USER: mmb-irb
   IMAGE_NAME: mddb_wf
 
 jobs:
@@ -37,7 +38,7 @@ jobs:
         with:
           context: ./workflow
           push: true
-          tags: ${{ env.REGISTRY }}/mmb-irb/${{ env.IMAGE_NAME }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.USER }}/${{ env.IMAGE_NAME }}:latest
           labels: |
             org.opencontainers.image.source=${{ github.repository_url }}
 
@@ -62,13 +63,13 @@ jobs:
       - name: Build and push Singularity image
         run: |
           # Pull the Docker image we just built
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          docker pull ${{ env.REGISTRY }}/${{ env.USER }}/${{ env.IMAGE_NAME }}:latest
           
           # Convert to Singularity
-          singularity build image.sif docker://${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          singularity build image.sif docker://${{ env.REGISTRY }}/${{ env.USER }}/${{ env.IMAGE_NAME }}:latest
           
           # Login to GHCR with Singularity
           echo ${{ secrets.GITHUB_TOKEN }} | singularity remote login --username ${{ github.actor }} --password-stdin ${{ env.REGISTRY }}
           
           # Push to GHCR (note: GHCR expects Docker images, so we push as a Docker image)
-          singularity push image.sif oras://${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-sif
+          singularity push image.sif oras://${{ env.REGISTRY }}/${{ env.USER }}/${{ env.IMAGE_NAME }}:latest-sif
