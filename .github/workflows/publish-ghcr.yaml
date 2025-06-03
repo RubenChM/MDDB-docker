@@ -59,17 +59,21 @@ jobs:
           wget https://github.com/sylabs/singularity/releases/download/v3.11.4/singularity-ce_3.11.4-jammy_amd64.deb
           sudo dpkg -i singularity-ce_3.11.4-jammy_amd64.deb
 
+      # Create Singularity authentication file
+      - name: Create Singularity auth config
+        run: |
+          mkdir -p ~/.singularity
+          echo "machine ${{ env.REGISTRY }} login ${{ github.actor }} password ${{ secrets.GITHUB_TOKEN }}" > ~/.singularity/docker-config.json
+
       # Convert Docker to Singularity and push
       - name: Build and push Singularity image
         run: |
-          # Pull the Docker image we just built
-          docker pull ${{ env.REGISTRY }}/${{ env.USER }}/${{ env.IMAGE_NAME }}:latest
-          
-          # Convert to Singularity
-          singularity build image.sif docker://${{ env.REGISTRY }}/${{ env.USER }}/${{ env.IMAGE_NAME }}:latest
+          # Convert to Singularity with authentication
+          SINGULARITY_DOCKER_USERNAME=${{ github.actor }} SINGULARITY_DOCKER_PASSWORD=${{ secrets.GITHUB_TOKEN }} \
+            singularity build image.sif docker://${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           
           # Login to GHCR with Singularity
           echo ${{ secrets.GITHUB_TOKEN }} | singularity remote login --username ${{ github.actor }} --password-stdin ${{ env.REGISTRY }}
           
-          # Push to GHCR (note: GHCR expects Docker images, so we push as a Docker image)
-          singularity push image.sif oras://${{ env.REGISTRY }}/${{ env.USER }}/${{ env.IMAGE_NAME }}:latest-sif
+          # Push to GHCR
+          singularity push image.sif oras://${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-sif
