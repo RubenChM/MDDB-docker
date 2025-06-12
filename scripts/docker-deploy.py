@@ -165,6 +165,11 @@ def deploy_stack(rm):
         print(f"Created MongoDB volume: {db_path}.")
         env_vars["DB_VOLUME_PATH"] = db_path
 
+        db_backup_path = os.path.join(main_path, 'db')
+        create_directory(db_backup_path, sudo)
+        print(f"Created MongoDB backup volume: {db_backup_path}.")
+        env_vars["DB_BACKUP_VOLUME_PATH"] = db_backup_path
+
         data_path = os.path.join(main_path, 'data')
         create_directory(data_path, sudo)
         print(f"Created data volume: {data_path}.")
@@ -211,6 +216,15 @@ def deploy_stack(rm):
         env_vars["DB_AUTHSOURCE"] = db_name
         env_vars["MONGO_INITDB_ROOT_USERNAME"] = input("Enter the root database user (default: root): ") or "root"
         env_vars["MONGO_INITDB_ROOT_PASSWORD"] = input("Enter the root database password (default: root): ") or "root"
+
+        db_bck = input("Do you want a backup for the database? (y/n): ")
+        if db_bck.lower() == "y":
+            env_vars["DB_BACKUP_REPLICAS"] = 1
+            env_vars["DB_BACKUP_INTERVAL"] = input("Enter the interval between backups in seconds (default, one day: 86400): ") or "86400"
+        else:
+            env_vars["DB_BACKUP_REPLICAS"] = 0
+            env_vars["DB_BACKUP_INTERVAL"] = 0
+
         env_vars["LOADER_DB_LOGIN"] = input("Enter the R/W database user for the loader service (default: user_rw): ") or "user_rw"
         env_vars["LOADER_DB_PASSWORD"] = input("Enter the R/W database password for the loader service (default: pwd_rw): ") or "pwd_rw"
         env_vars["REST_DB_LOGIN"] = input("Enter the R database user for the REST API service (default: user_r): ") or "user_r"
