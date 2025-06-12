@@ -32,7 +32,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       # Build and push Docker image
-      # TODO: AVOID PUSH AND DO BUILD IN THE SAME STEP (THEN SINGULARITY BUILD)
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
