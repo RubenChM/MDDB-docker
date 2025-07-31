@@ -188,6 +188,17 @@ Additionally, users are able to access the database as a **root/admin** user, as
 
 Take into account that acessing mongoDB as **root/admin** user is **not recommended** as with this user there are **no restrictions** once inside the database. We strongly recommend to use the **users** defined in the [**mongo-init.js**](../mongodb/mongo-init.js) file for accessing the database.
 
+## Mongo restore
+
+If there is a previous version of the database it can be copied into the **my_stack_mongodb** service. This is the instruction for performing a `mongorestore` from a **mongo dump**:
+
+    docker run --rm --network data_network -v <PATH_TO_MONGODUMP>:/dump mongo mongorestore --host my_stack_mongodb --port 27017 --username <ROOT_USER> --password <ROOT_PASSWORD> --authenticationDatabase admin --db <DB_TO_RESTORE> /dump/<DB_TO_RESTORE>
+
+* **PATH_TO_MONGODUMP:** Path to the mongo dump.
+* **ROOT_USER:** Root user for the DB.
+* **ROOT_PASSWORD:** Root password for the DB.
+* **DB_TO_RESTORE:** Name of the database to restore.
+
 ## Docker logs
 
 Show logs for a container:
