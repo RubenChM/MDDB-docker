@@ -1,0 +1,19 @@
+name: Test Slack Notification
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  notify-slack:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send Slack notification
+        run: |
+          STATUS=${{ job.status }}
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{\"text\":\"This is an automatic slack notification via GitHub Actions. Status: $STATUS\"}" \
+            $SLACK_WEBHOOK_URL
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
