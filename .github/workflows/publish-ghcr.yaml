@@ -42,9 +42,16 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.USER }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
           labels: |
             org.opencontainers.image.source=${{ github.repository_url }}
+            org.opencontainers.image.description="Docker image for MDDB workflow"
             org.opencontainers.image.version=${{ github.ref_name }}
-            org.opencontainers.image.description=@./workflow/README.md
-          # org.opencontainers.image.documentation=https://github.com/mmb-irb/MDDB-docker/blob/main/workflow/README.md
+
+      - name: Update GHCR README
+        run: |
+          gh api \
+            --method PUT \
+            -H "Accept: application/vnd.github.v3+json" \
+            /orgs/mmb-irb/packages/container/${{ env.IMAGE_NAME }}/readme \
+            -f body="$(cat ./workflow/README.md)"
 
       # Install Singularity
       # - name: Install Singularity
