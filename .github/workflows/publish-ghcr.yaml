@@ -47,12 +47,12 @@ jobs:
 
       - name: Update GHCR README
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GHCR_PAT }}
         run: |
           gh api \
             --method PUT \
             -H "Accept: application/vnd.github.v3+json" \
-            /orgs/mmb-irb/packages/container/${{ env.IMAGE_NAME }}/readme \
+            /orgs/${{ env.USER }}/packages/container/${{ env.IMAGE_NAME }}/readme \
             -f body="$(cat ./workflow/README.md)"
 
 
