@@ -42,9 +42,9 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.USER }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
           labels: |
             org.opencontainers.image.source=${{ github.repository_url }}
-            org.opencontainers.image.description="Container image for MDDB workflow"
             org.opencontainers.image.version=${{ github.ref_name }}
-            org.opencontainers.image.documentation=https://github.com/mmb-irb/MDDB-docker/blob/main/workflow/README.md
+            org.opencontainers.image.description=@./workflow/README.md
+          # org.opencontainers.image.documentation=https://github.com/mmb-irb/MDDB-docker/blob/main/workflow/README.md
 
       # Install Singularity
       # - name: Install Singularity
