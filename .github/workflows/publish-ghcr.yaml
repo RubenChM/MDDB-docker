@@ -44,6 +44,7 @@ jobs:
             org.opencontainers.image.source=${{ github.repository_url }}
             org.opencontainers.image.description="Container image for MDDB workflow"
             org.opencontainers.image.version=${{ github.ref_name }}
+            org.opencontainers.image.documentation=https://github.com/mmb-irb/MDDB-docker/blob/main/workflow/README.md
 
       # Install Singularity
       # - name: Install Singularity
@@ -87,12 +88,3 @@ jobs:
       #     # Authenticate and push with ORAS
       #     echo ${{ secrets.GITHUB_TOKEN }} | oras login ${{ env.REGISTRY }} --username ${{ github.actor }} --password-stdin
       #     oras push ${{ env.REGISTRY }}/${{ env.USER }}/${{ env.IMAGE_NAME }}:latest-sif image.sif
-
-      # Update GHCR README from ghcr-readme.md
-      - name: Update GHCR README
-        uses: peter-evans/ghcr-description@v2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ github.repository }}
-          container: ${{ env.IMAGE_NAME }}
-          readme-file: ./workflow/README.md
