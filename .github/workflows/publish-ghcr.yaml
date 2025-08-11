@@ -37,50 +37,62 @@ jobs:
         with:
           context: ./workflow
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.USER }}/${{ env.IMAGE_NAME }}:latest
+          tags: 
+            ${{ env.REGISTRY }}/${{ env.USER }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.USER }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
           labels: |
             org.opencontainers.image.source=${{ github.repository_url }}
+            org.opencontainers.image.description="Container image for MDDB workflow"
+            org.opencontainers.image.version=${{ github.ref_name }}
 
       # Install Singularity
-      - name: Install Singularity
-        run: |
-          sudo apt-get update && sudo apt-get install -y \
-            build-essential \
-            libssl-dev \
-            uuid-dev \
-            libgpgme11-dev \
-            squashfs-tools \
-            libseccomp-dev \
-            wget \
-            pkg-config \
-            git \
-            cryptsetup-bin
-          wget https://github.com/sylabs/singularity/releases/download/v3.11.4/singularity-ce_3.11.4-jammy_amd64.deb
-          sudo dpkg -i singularity-ce_3.11.4-jammy_amd64.deb
+      # - name: Install Singularity
+      #   run: |
+      #     sudo apt-get update && sudo apt-get install -y \
+      #       build-essential \
+      #       libssl-dev \
+      #       uuid-dev \
+      #       libgpgme11-dev \
+      #       squashfs-tools \
+      #       libseccomp-dev \
+      #       wget \
+      #       pkg-config \
+      #       git \
+      #       cryptsetup-bin
+      #     wget https://github.com/sylabs/singularity/releases/download/v3.11.4/singularity-ce_3.11.4-jammy_amd64.deb
+      #     sudo dpkg -i singularity-ce_3.11.4-jammy_amd64.deb
 
       # Install ORAS
-      - name: Install ORAS
-        run: |
-          curl -LO https://github.com/oras-project/oras/releases/download/v1.1.0/oras_1.1.0_linux_amd64.tar.gz
-          mkdir -p oras-install/
-          tar -zxf oras_1.1.0_linux_amd64.tar.gz -C oras-install/
-          sudo mv oras-install/oras /usr/local/bin/
-          rm -rf oras_1.1.0_linux_amd64.tar.gz oras-install/
+      # - name: Install ORAS
+      #   run: |
+      #     curl -LO https://github.com/oras-project/oras/releases/download/v1.1.0/oras_1.1.0_linux_amd64.tar.gz
+      #     mkdir -p oras-install/
+      #     tar -zxf oras_1.1.0_linux_amd64.tar.gz -C oras-install/
+      #     sudo mv oras-install/oras /usr/local/bin/
+      #     rm -rf oras_1.1.0_linux_amd64.tar.gz oras-install/
 
       # Create Singularity authentication file
-      - name: Create Singularity auth config
-        run: |
-          mkdir -p ~/.singularity
-          echo "machine ${{ env.REGISTRY }} login ${{ github.actor }} password ${{ secrets.GITHUB_TOKEN }}" > ~/.singularity/docker-config.json
+      # - name: Create Singularity auth config
+      #   run: |
+      #     mkdir -p ~/.singularity
+      #     echo "machine ${{ env.REGISTRY }} login ${{ github.actor }} password ${{ secrets.GITHUB_TOKEN }}" > ~/.singularity/docker-config.json
 
       # Build and push Singularity image
-      - name: Build and push Singularity image
-        run: |
-          # Build SIF from Docker image
-          SINGULARITY_DOCKER_USERNAME=${{ github.actor }} SINGULARITY_DOCKER_PASSWORD=${{ secrets.GITHUB_TOKEN }} \
-            singularity build image.sif docker://${{ env.REGISTRY }}/${{ env.USER }}/${{ env.IMAGE_NAME }}:latest
+      # - name: Build and push Singularity image
+      #   run: |
+      #     # Build SIF from Docker image
+      #     SINGULARITY_DOCKER_USERNAME=${{ github.actor }} SINGULARITY_DOCKER_PASSWORD=${{ secrets.GITHUB_TOKEN }} \
+      #       singularity build image.sif docker://${{ env.REGISTRY }}/${{ env.USER }}/${{ env.IMAGE_NAME }}:latest
           
-          # Authenticate and push with ORAS
-          echo ${{ secrets.GITHUB_TOKEN }} | oras login ${{ env.REGISTRY }} --username ${{ github.actor }} --password-stdin
-          oras push ${{ env.REGISTRY }}/${{ env.USER }}/${{ env.IMAGE_NAME }}:latest-sif image.sif
+      #     # Authenticate and push with ORAS
+      #     echo ${{ secrets.GITHUB_TOKEN }} | oras login ${{ env.REGISTRY }} --username ${{ github.actor }} --password-stdin
+      #     oras push ${{ env.REGISTRY }}/${{ env.USER }}/${{ env.IMAGE_NAME }}:latest-sif image.sif
 
+      # Update GHCR README from ghcr-readme.md
+      - name: Update GHCR README
+        uses: peter-evans/ghcr-description@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          container: ${{ env.IMAGE_NAME }}
+          readme-file: ./workflow/README.md
