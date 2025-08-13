@@ -1,8 +1,18 @@
 # Stage 1: Build the Client
 FROM node:16.19.1-alpine AS build
 
-# Install Python and build dependencies
-RUN apk add --no-cache python3 make g++
+# Install Python, build dependencies, and Canvas dependencies
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    pkgconfig \
+    cairo-dev \
+    pango-dev \
+    libjpeg-turbo-dev \
+    giflib-dev \
+    librsvg-dev \
+    pixman-dev
 
 # Set working directory
 WORKDIR /app
