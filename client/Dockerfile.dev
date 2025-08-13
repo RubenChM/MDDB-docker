@@ -1,6 +1,9 @@
 # Stage 1: Build the Client
 FROM node:16.9.1-alpine AS build
 
+# Force install specific npm version
+RUN npm install -g npm@8.19.3
+
 # Set working directory
 WORKDIR /app
 
