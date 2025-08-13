@@ -10,6 +10,9 @@ COPY MDposit-client ./MDposit-client
 # Define working directory
 WORKDIR /app/MDposit-client
 
+# Create .env file
+RUN touch .env
+
 # Install packages
 RUN npm install
 
