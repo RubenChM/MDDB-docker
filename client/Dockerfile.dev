@@ -1,0 +1,35 @@
+# Stage 1: Build the Client
+FROM node:16.9.1-alpine AS build
+
+# Set working directory
+WORKDIR /app
+
+# Copy the MDposit-client source code
+COPY MDposit-client ./MDposit-client
+
+# Define working directory
+WORKDIR /app/MDposit-client
+
+# Install packages
+RUN npm install
+
+# Build website
+RUN npm run build
+
+# Stage 2: Serve the client app with nginx
+FROM docker.io/library/nginx:alpine
+
+# Define the build arguments
+ARG CLIENT_INNER_PORT
+
+# Define working dir
+WORKDIR /app
+
+# Copy from the previous stage
+COPY --from=build /app/MDposit-client/build /usr/share/nginx/html
+
+# Expose port ${CLIENT_INNER_PORT}
+EXPOSE ${CLIENT_INNER_PORT}
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
