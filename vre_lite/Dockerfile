@@ -6,7 +6,16 @@ WORKDIR /app
 
 # Clone mddb-vre repo
 ARG VERSION
-RUN git clone --branch ${VERSION} --depth 1 https://github.com/mmb-irb/mddb-vre.git
+
+RUN if [ -z "$VERSION" ]; then \
+        git clone --branch main --depth 1 https://github.com/mmb-irb/mddb-vre.git; \
+        curl -s "https://api.github.com/repos/mmb-irb/mddb-vre/tags" \
+            | grep -m 1 '"name":' \
+            | sed -E 's/.*"name": "([^"]+)".*/\1/' > version.txt; \
+    else \
+        git clone --branch ${VERSION} --depth 1 https://github.com/mmb-irb/mddb-vre.git; \
+        echo "$VERSION" > version.txt; \
+    fi
 
 # Define the build arguments
 ARG VRE_LITE_BASE_URL_DEVELOPMENT
@@ -56,6 +65,8 @@ WORKDIR /app
 
 # Copy the built Nuxt app from the previous stage
 COPY --from=build /app/mddb-vre/.output /app/.output
+# Copy the version file
+COPY --from=build /app/version.txt /app/version.txt
 
 # Copy the pm2 configuration file
 COPY ecosystem.config.cjs .
