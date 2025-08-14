@@ -30,12 +30,13 @@ def command_exists(cmd):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Rebuild and push one or more services from node.')
+    parser = argparse.ArgumentParser(description='Rebuild and push a concrete version service from node.')
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-d', dest='mode', action='store_const', const='d', default='d', help='Use Docker (default)')
     group.add_argument('-p', dest='mode', action='store_const', const='p', help='Use Podman')
-    parser.add_argument('-s', '--services', nargs='+', required=True, help='List of services to build and push into the stack.')
-    parser.add_argument('-t', '--stack', type=str, required=False, help='Name of the stack where the services are running (only for docker swarm).')
+    parser.add_argument('-s', '--service', type=str, required=True, help='Service to build and push into the stack.')
+    parser.add_argument('-v', '--version', type=str, required=True, help='Version of the service.')
+    parser.add_argument('-t', '--stack', type=str, required=False, help='Name of the stack where the service is running (only for docker swarm).')
 
     args = parser.parse_args()
 
@@ -47,25 +48,22 @@ def main():
 
         subprocess.run("export $(grep -v '^#' .env | xargs)", shell=True, check=True, executable='/bin/bash')
 
-        # Build services with --no-cache
+        # Build service with --no-cache
         build_command = []
         if command_exists(['docker-compose', 'version']):
-            build_command = ['docker-compose', 'build']
+            build_command = ['docker-compose', 'build', '--build-arg', f'VERSION={args.version}', '--no-cache', args.service]
         elif command_exists(['docker', 'compose', 'version']):
-            build_command = ['docker', 'compose', 'build']
+            build_command = ['docker', 'compose', 'build', '--build-arg', f'VERSION={args.version}', '--no-cache', args.service]
         else:
             print("Error: Neither 'docker-compose' nor 'docker compose' commands are available.")
             sys.exit(1)
 
-        for service in args.services:
-            build_command.extend(['--no-cache', service])
         print(f"Running command: {' '.join(build_command)}")
         run_command(build_command)
 
-        # Update services
-        for service in args.services:
-            update_command = ['docker', 'service', 'update', '--force', f'{args.stack}_{service}']
-            run_command(update_command)
+        # Update service
+        update_command = ['docker', 'service', 'update', '--force', f'{args.stack}_{args.service}']
+        run_command(update_command)
 
         # Prune containers and images
         run_command(['docker', 'container', 'prune', '-f'])
@@ -81,15 +79,13 @@ def main():
                     key, value = line.split('=', 1)
                     os.environ[key] = value
 
-        for service in args.services:
-            if service != 'mongodb':
-                subprocess.run(f"podman stop {service} || true && podman rm {service} || true", shell=True, check=True, executable='/bin/bash')
-            b = get_podman_script('build', service)
-            run_command_p(b)
+        if args.service != 'mongodb':
+            subprocess.run(f"podman stop {args.service} || true && podman rm {args.service} || true", shell=True, check=True, executable='/bin/bash')
+        b = get_podman_script('build', args.service)
+        run_command_p(b)
 
-        for service in args.services:
-            r = get_podman_script('run', service)
-            run_command_p(r)
+        r = get_podman_script('run', args.service)
+        run_command_p(r)
 
 
 if __name__ == '__main__':
