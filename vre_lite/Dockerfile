@@ -13,7 +13,7 @@ RUN if [ -z "$VERSION" ]; then \
             | grep -m 1 '"name":' \
             | sed -E 's/.*"name": "([^"]+)".*/\1/' > version.txt; \
     else \
-        git clone --branch ${VERSION} --depth 1 https://github.com/mmb-irb/mddb-vre.git; \
+        git clone --branch v${VERSION} --depth 1 https://github.com/mmb-irb/mddb-vre.git; \
         echo "$VERSION" > version.txt; \
     fi
 
