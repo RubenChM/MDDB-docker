@@ -19,6 +19,8 @@ RUN if [ -z "$VERSION" ]; then \
         LABEL="$VERSION"; \
     fi
 
+RUN echo "Using MDposit client build version: $LABEL"
+
 # Set the label for the image
 LABEL version="$LABEL"
 
