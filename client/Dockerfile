@@ -19,7 +19,7 @@ RUN if [ -z "$VERSION" ]; then \
     else \
         wget https://raw.githubusercontent.com/mmb-irb/MDposit-client-build/v$VERSION/build.zip; \
         LABEL_VERSION="$VERSION"; \
-    fi \ &&
+    fi && \
     echo "$LABEL_VERSION" > /app/version.txt
 
 
