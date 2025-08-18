@@ -35,45 +35,14 @@ class VersionChecker:
 
             output_lines = []
 
+            # Stream output in real-time
             if stream_output:
-                # Real-time streaming with limited rolling display
-                # Store cursor position and prepare for rolling display
-                rolling_buffer = []
-                max_display_lines = 15  # Configurable number of lines to show
-
-                print(f"📺 Streaming output (showing last {max_display_lines} lines):")
-                print("-" * 60)
-
-                # Save current cursor position
-                start_line = self.get_cursor_position()
-
                 while True:
                     output = process.stdout.readline()
                     if output == '' and process.poll() is not None:
                         break
                     if output:
-                        line = output.strip()
-                        output_lines.append(line)
-                        rolling_buffer.append(line)
-
-                        # Keep only the last N lines in rolling buffer
-                        if len(rolling_buffer) > max_display_lines:
-                            rolling_buffer.pop(0)
-
-                        # Clear previous display and show current buffer
-                        self.update_rolling_display(rolling_buffer, max_display_lines)
-
-                # Final cleanup - show completion message
-                print("\n" + "=" * 60)
-                print("✅ Command completed!")
-
-            else:
-                # Silent mode - just collect output
-                while True:
-                    output = process.stdout.readline()
-                    if output == '' and process.poll() is not None:
-                        break
-                    if output:
+                        print(output.strip())  # Print immediately
                         output_lines.append(output.strip())
 
             return_code = process.poll()
@@ -88,31 +57,94 @@ class VersionChecker:
             print(f"Command execution error: {e}")
             return False, str(e)
 
-    def get_cursor_position(self):
-        """Get current cursor position (simplified version)."""
-        # This is a simplified approach - in practice you might want to use more sophisticated terminal control
-        return 0
+    # def run_command(self, command: List[str], shell: bool = False, stream_output: bool = False) -> Tuple[bool, str]:
+    #     """Run a command and return success status and output."""
+    #     try:
+    #         if shell:
+    #             process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True)
+    #         else:
+    #             process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True)
 
-    def update_rolling_display(self, lines, max_lines):
-        """Update the rolling display of command output."""
-        import os
+    #         output_lines = []
 
-        # Clear the display area (move cursor up and clear lines)
-        # This is a simple approach - you might want to use curses for more control
-        for _ in range(min(len(lines), max_lines) + 1):
-            print("\033[1A\033[2K", end="")  # Move up one line and clear it
+    #         if stream_output:
+    #             # Real-time streaming with limited rolling display
+    #             # Store cursor position and prepare for rolling display
+    #             rolling_buffer = []
+    #             max_display_lines = 15  # Configurable number of lines to show
 
-        # Print current buffer
-        for i, line in enumerate(lines[-max_lines:]):
-            # Truncate long lines to fit terminal width
-            terminal_width = os.get_terminal_size().columns - 5
-            if len(line) > terminal_width:
-                line = line[:terminal_width-3] + "..."
-            print(f"  {line}")
+    #             print(f"📺 Streaming output (showing last {max_display_lines} lines):")
+    #             print("-" * 60)
 
-        # Add padding if buffer is smaller than max_lines
-        for _ in range(max_lines - len(lines)):
-            print()
+    #             # Save current cursor position
+    #             start_line = self.get_cursor_position()
+
+    #             while True:
+    #                 output = process.stdout.readline()
+    #                 if output == '' and process.poll() is not None:
+    #                     break
+    #                 if output:
+    #                     line = output.strip()
+    #                     output_lines.append(line)
+    #                     rolling_buffer.append(line)
+
+    #                     # Keep only the last N lines in rolling buffer
+    #                     if len(rolling_buffer) > max_display_lines:
+    #                         rolling_buffer.pop(0)
+
+    #                     # Clear previous display and show current buffer
+    #                     self.update_rolling_display(rolling_buffer, max_display_lines)
+
+    #             # Final cleanup - show completion message
+    #             print("\n" + "=" * 60)
+    #             print("✅ Command completed!")
+
+    #         else:
+    #             # Silent mode - just collect output
+    #             while True:
+    #                 output = process.stdout.readline()
+    #                 if output == '' and process.poll() is not None:
+    #                     break
+    #                 if output:
+    #                     output_lines.append(output.strip())
+
+    #         return_code = process.poll()
+    #         full_output = '\n'.join(output_lines)
+
+    #         if return_code == 0:
+    #             return True, full_output
+    #         else:
+    #             return False, full_output
+
+    #     except Exception as e:
+    #         print(f"Command execution error: {e}")
+    #         return False, str(e)
+
+    # def get_cursor_position(self):
+    #     """Get current cursor position (simplified version)."""
+    #     # This is a simplified approach - in practice you might want to use more sophisticated terminal control
+    #     return 0
+
+    # def update_rolling_display(self, lines, max_lines):
+    #     """Update the rolling display of command output."""
+    #     import os
+
+    #     # Clear the display area (move cursor up and clear lines)
+    #     # This is a simple approach - you might want to use curses for more control
+    #     for _ in range(min(len(lines), max_lines) + 1):
+    #         print("\033[1A\033[2K", end="")  # Move up one line and clear it
+
+    #     # Print current buffer
+    #     for i, line in enumerate(lines[-max_lines:]):
+    #         # Truncate long lines to fit terminal width
+    #         terminal_width = os.get_terminal_size().columns - 5
+    #         if len(line) > terminal_width:
+    #             line = line[:terminal_width-3] + "..."
+    #         print(f"  {line}")
+
+    #     # Add padding if buffer is smaller than max_lines
+    #     for _ in range(max_lines - len(lines)):
+    #         print()
 
     # def run_command(self, command: List[str], shell: bool = False) -> Tuple[bool, str]:
     #     """Run a command and return success status and output."""
