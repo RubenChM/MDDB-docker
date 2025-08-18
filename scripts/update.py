@@ -25,38 +25,6 @@ class VersionChecker:
         self.service_versions = {}
         self.repo_versions = {}
 
-    def run_command(self, command: List[str], shell: bool = False, stream_output: bool = False) -> Tuple[bool, str]:
-        """Run a command and return success status and output."""
-        try:
-            if shell:
-                process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True)
-            else:
-                process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True)
-
-            output_lines = []
-
-            # Stream output in real-time
-            if stream_output:
-                while True:
-                    output = process.stdout.readline()
-                    if output == '' and process.poll() is not None:
-                        break
-                    if output:
-                        print(output.strip())  # Print immediately
-                        output_lines.append(output.strip())
-
-            return_code = process.poll()
-            full_output = '\n'.join(output_lines)
-
-            if return_code == 0:
-                return True, full_output
-            else:
-                return False, full_output
-
-        except Exception as e:
-            print(f"Command execution error: {e}")
-            return False, str(e)
-
     # def run_command(self, command: List[str], shell: bool = False, stream_output: bool = False) -> Tuple[bool, str]:
     #     """Run a command and return success status and output."""
     #     try:
@@ -146,18 +114,18 @@ class VersionChecker:
     #     for _ in range(max_lines - len(lines)):
     #         print()
 
-    # def run_command(self, command: List[str], shell: bool = False) -> Tuple[bool, str]:
-    #     """Run a command and return success status and output."""
-    #     try:
-    #         if shell:
-    #             result = subprocess.run(command, shell=True, capture_output=True, text=True, check=True)
-    #         else:
-    #             result = subprocess.run(command, capture_output=True, text=True, check=True)
-    #         return True, result.stdout.strip()
-    #     except subprocess.CalledProcessError as e:
-    #         return False, e.stderr.strip() if e.stderr else str(e)
-    #     except Exception as e:
-    #         return False, str(e)
+    def run_command(self, command: List[str], shell: bool = False) -> Tuple[bool, str]:
+        """Run a command and return success status and output."""
+        try:
+            if shell:
+                result = subprocess.run(command, shell=True, capture_output=True, text=True, check=True)
+            else:
+                result = subprocess.run(command, capture_output=True, text=True, check=True)
+            return True, result.stdout.strip()
+        except subprocess.CalledProcessError as e:
+            return False, e.stderr.strip() if e.stderr else str(e)
+        except Exception as e:
+            return False, str(e)
 
     def get_repo_version(self, org: str, repo: str) -> Optional[str]:
         """Get the latest version from GitHub repo tags."""
