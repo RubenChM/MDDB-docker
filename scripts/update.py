@@ -139,7 +139,9 @@ class VersionChecker:
             print(service_name, end=' ')
 
             current = self.service_versions.get(service_name, "Unknown")
+            print(f"{current:<12}", end=' ')
             latest = self.repo_versions.get(service_name, "Unknown")
+            print(f"{latest:<12}", end=' ')
 
             if service_name in self.updatable_services:
                 status = "🆙 Updatable"
