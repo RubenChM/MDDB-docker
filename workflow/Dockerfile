@@ -23,7 +23,7 @@ RUN if [ -z "$VERSION" ]; then \
         git clone --branch master --depth 1 https://github.com/mmb-irb/MDDB-workflow.git; \
         curl -s "https://api.github.com/repos/mmb-irb/MDDB-workflow/tags" \
             | grep -m 1 '"name":' \
-            | sed -E 's/.*"name": "([^"]+)".*/\1/' > version.txt; \
+            | sed -E 's/.*"name": "v?([^"]+)".*/\1/'
     else \
         git clone --branch v${VERSION} --depth 1 https://github.com/mmb-irb/MDDB-workflow.git; \
         echo "$VERSION" > version.txt; \
