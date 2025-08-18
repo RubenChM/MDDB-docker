@@ -14,9 +14,6 @@ RUN apt-get update && \
 COPY goofys .
 RUN chmod +x goofys 
 
-# Clone repo
-# RUN git clone https://github.com/mmb-irb/MDDB-workflow.git
-
 # Define the build arguments
 ARG VERSION
 
