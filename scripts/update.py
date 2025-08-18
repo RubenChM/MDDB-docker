@@ -158,7 +158,7 @@ class VersionChecker:
         else:
             print("✅ All services are up to date!")
 
-    def update_service(self, service_name: str) -> bool:
+    def update_service(self, service_name: str, stack_name: str) -> bool:
         """Update a single service using rebuild.py script."""
         print(f"\n🔄 Updating {service_name}...")
 
@@ -175,7 +175,7 @@ class VersionChecker:
             return False
 
         # Run rebuild.py for the service
-        command = ["python3", rebuild_script, service_name]
+        command = ["python3", rebuild_script, '-s', service_name, '-t', stack_name]
 
         print(f"   Running: {' '.join(command)}")
         success, output = self.run_command(command)
@@ -191,7 +191,7 @@ class VersionChecker:
             print(f"   ❌ Failed to update {service_name}: {output}")
             return False
 
-    def update_all_services(self) -> int:
+    def update_all_services(self, stack_name: str) -> int:
         """Update all updatable services."""
         if not self.updatable_services:
             print("✅ No services need updating!")
@@ -201,7 +201,7 @@ class VersionChecker:
 
         successful_updates = 0
         for service in self.updatable_services.copy():
-            if self.update_service(service):
+            if self.update_service(service, stack_name):
                 successful_updates += 1
             print()  # Add spacing between updates
 
@@ -244,7 +244,8 @@ class VersionChecker:
             if choice == "1":
                 confirm = input(f"\n⚠️  Update all {len(self.updatable_services)} services? (y/N): ").strip().lower()
                 if confirm in ['y', 'yes']:
-                    self.update_all_services()
+                    stack_name = input("Enter stack name (default: 'my_stack'): ").strip() or "my_stack"
+                    self.update_all_services(stack_name)
                 else:
                     print("❌ Update cancelled")
 
@@ -261,7 +262,8 @@ class VersionChecker:
                         service_name = self.updatable_services[service_choice - 1]
                         confirm = input(f"\n⚠️  Update {service_name}? (y/N): ").strip().lower()
                         if confirm in ['y', 'yes']:
-                            self.update_service(service_name)
+                            stack_name = input("Enter stack name (default: 'my_stack'): ").strip() or "my_stack"
+                            self.update_service(service_name, stack_name)
                         else:
                             print("❌ Update cancelled")
                     else:
