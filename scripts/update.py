@@ -267,7 +267,7 @@ class VersionChecker:
         command = ["python3", rebuild_script, '-s', service_name, '-t', stack_name]
 
         print(f"   Running: {' '.join(command)}")
-        success, output = self.run_command(command, shell=False, stream_output=False)
+        success, output = self.run_command(command, shell=False, stream_output=True)
 
         if success:
             print(f"   ✅ Successfully updated {service_name}")
