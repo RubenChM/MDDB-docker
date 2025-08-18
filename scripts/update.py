@@ -136,8 +136,8 @@ class VersionChecker:
                         print(output.strip())  # Print immediately
                         output_lines.append(output.strip())
 
-                return_code = process.poll()
-                full_output = '\n'.join(output_lines)
+            return_code = process.poll()
+            full_output = '\n'.join(output_lines)
 
             if return_code == 0:
                 return True, full_output
