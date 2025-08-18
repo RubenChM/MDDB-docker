@@ -138,6 +138,7 @@ class VersionChecker:
 
             print(service_name, end=' ')
 
+            print(self.service_versions)
             current = self.service_versions.get(service_name, "Unknown")
             print(f"{current:<12}", end=' ')
             latest = self.repo_versions.get(service_name, "Unknown")
