@@ -165,7 +165,7 @@ class VersionChecker:
 
             print()
 
-    def read_env_file(file_path):
+    def read_env_file(self, file_path: str) -> dict:
         env_vars = {}
         with open(file_path) as f:
             for line in f:
@@ -361,6 +361,8 @@ def main():
     checker = VersionChecker()
 
     try:
+        env_vars = checker.read_env_file('.env')
+        print(env_vars)
         # Initial version check
         checker.check_all_versions()
         checker.display_summary()
