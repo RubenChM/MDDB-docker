@@ -7,6 +7,8 @@ WORKDIR /app
 # Clone mddb-vre repo
 ARG VERSION
 
+# If version is set, wget the specific version of the vre_lite
+# Otherwise, use the latest version
 RUN if [ -z "$VERSION" ]; then \
         git clone --branch main --depth 1 https://github.com/mmb-irb/mddb-vre.git; \
         curl -s "https://api.github.com/repos/mmb-irb/mddb-vre/tags" \
