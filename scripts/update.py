@@ -70,7 +70,7 @@ class VersionChecker:
 
         if not success:
             print(f"    ⚠️  Could not get version for {service_name}: version.txt not found or service not built")
-            return None
+            return "unknown"
 
         version = output.strip()
         print(f"    ✅ Current version: {version}")
