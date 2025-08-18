@@ -10,21 +10,27 @@ RUN apt-get update && \
     curl -sL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install -y nodejs
 
-# Clone loader repo
-RUN git clone https://github.com/mmb-irb/MDDB-loader.git
-
 # Version argument
 ARG VERSION
 
 # If version is set, wget the specific version of the loader
 # Otherwise, use the latest version
 RUN if [ -z "$VERSION" ]; then \
-        git clone --branch master --depth 1 https://github.com/mmb-irb/MDDB-loader.git; \
-        curl -s "https://api.github.com/repos/mmb-irb/MDDB-loader/tags" \
+        echo "No VERSION provided, fetching latest tag..." && \
+        LATEST_TAG=$(curl -s "https://api.github.com/repos/mmb-irb/MDDB-loader/tags" \
             | grep -m 1 '"name":' \
-            | sed -E 's/.*"name": "v?([^"]+)".*/\1/' > version.txt; \
+            | sed -E 's/.*"name": "v?([^"]+)".*/\1/') && \
+        if [ -z "$LATEST_TAG" ]; then \
+            echo "Failed to fetch latest tag, using main branch" && \
+            git clone --branch main --depth 1 https://github.com/mmb-irb/MDDB-loader.git && \
+            echo "main" > version.txt; \
+        else \
+            echo "Using latest tag: $LATEST_TAG" && \
+            echo "$LATEST_TAG" > version.txt && \
+            git clone --branch "v$LATEST_TAG" --depth 1 https://github.com/mmb-irb/MDDB-loader.git; \
+        fi; \
     else \
-        git clone --branch v${VERSION} --depth 1 https://github.com/mmb-irb/MDDB-loader.git; \
+        git clone --branch "v${VERSION}" --depth 1 https://github.com/mmb-irb/MDDB-loader.git; \
         echo "$VERSION" > version.txt; \
     fi
 

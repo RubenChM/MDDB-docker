@@ -2,7 +2,7 @@
 
 import subprocess
 # import json
-# import re
+import requests
 import os
 import sys
 # from typing import Dict, List, Tuple, Optional
@@ -165,6 +165,27 @@ class VersionChecker:
 
             print()
 
+    def read_env_file(file_path):
+        env_vars = {}
+        with open(file_path) as f:
+            for line in f:
+                # Strip whitespace and ignore comments and empty lines
+                line = line.strip()
+                if line and not line.startswith('#'):
+                    key, value = line.split('=', 1)
+                    env_vars[key] = value
+        return env_vars
+
+    def send_slack_notification(self, message: str):
+        """Send a notification to Slack (placeholder function)."""
+        # This is a placeholder. Implement actual Slack notification logic here.
+        print(f"🔔 Sending Slack notification: {message}")
+        env_vars = self.read_env_file('.env')
+        slack_webhook_url = env_vars.get('SLACK_WEBHOOK_URL')
+        node = env_vars.get('NODE')
+        message = message.replace("##node##", node)
+        requests.post(slack_webhook_url, json={"text": message})
+
     def display_summary(self):
         """Display a summary of version status."""
         print("=" * 60)
@@ -226,6 +247,10 @@ class VersionChecker:
             self.service_versions[service_name] = target_version
             if service_name in self.updatable_services:
                 self.updatable_services.remove(service_name)
+
+            # Send Slack notification about successful update
+            self.send_slack_notification(f"✅ Service *'{service_name}'* updated successfully from *{self.service_versions.get(service_name, 'unknown')}* to *{target_version}* in node *##node##*.")
+
             return True
         else:
             print(f"   ❌ Failed to update {service_name}: {output}")

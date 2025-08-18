@@ -21,12 +21,21 @@ ARG VERSION
 # If version is set, wget the specific version of the rest API
 # Otherwise, use the latest version
 RUN if [ -z "$VERSION" ]; then \
-        git clone --branch master --depth 1 https://github.com/mmb-irb/MDDB-REST-API.git; \
-        curl -s "https://api.github.com/repos/mmb-irb/MDDB-REST-API/tags" \
+        echo "No VERSION provided, fetching latest tag..." && \
+        LATEST_TAG=$(curl -s "https://api.github.com/repos/mmb-irb/MDDB-REST-API/tags" \
             | grep -m 1 '"name":' \
-            | sed -E 's/.*"name": "v?([^"]+)".*/\1/' > version.txt; \
+            | sed -E 's/.*"name": "v?([^"]+)".*/\1/') && \
+        if [ -z "$LATEST_TAG" ]; then \
+            echo "Failed to fetch latest tag, using main branch" && \
+            git clone --branch main --depth 1 https://github.com/mmb-irb/MDDB-REST-API.git && \
+            echo "main" > version.txt; \
+        else \
+            echo "Using latest tag: $LATEST_TAG" && \
+            echo "$LATEST_TAG" > version.txt && \
+            git clone --branch "v$LATEST_TAG" --depth 1 https://github.com/mmb-irb/MDDB-REST-API.git; \
+        fi; \
     else \
-        git clone --branch v${VERSION} --depth 1 https://github.com/mmb-irb/MDDB-REST-API.git; \
+        git clone --branch "v${VERSION}" --depth 1 https://github.com/mmb-irb/MDDB-REST-API.git; \
         echo "$VERSION" > version.txt; \
     fi
 

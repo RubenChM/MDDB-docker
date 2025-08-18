@@ -6,16 +6,26 @@ WORKDIR /app
 
 # Version argument
 ARG VERSION
+ARG LATEST_TAG
 
 # If version is set, wget the specific version of the vre_lite
 # Otherwise, use the latest version
 RUN if [ -z "$VERSION" ]; then \
-        git clone --branch main --depth 1 https://github.com/mmb-irb/mddb-vre.git; \
-        curl -s "https://api.github.com/repos/mmb-irb/mddb-vre/tags" \
+        echo "No VERSION provided, fetching latest tag..." && \
+        LATEST_TAG=$(curl -s "https://api.github.com/repos/mmb-irb/mddb-vre/tags" \
             | grep -m 1 '"name":' \
-            | sed -E 's/.*"name": "v?([^"]+)".*/\1/' > version.txt; \
+            | sed -E 's/.*"name": "v?([^"]+)".*/\1/') && \
+        if [ -z "$LATEST_TAG" ]; then \
+            echo "Failed to fetch latest tag, using main branch" && \
+            git clone --branch main --depth 1 https://github.com/mmb-irb/mddb-vre.git && \
+            echo "main" > version.txt; \
+        else \
+            echo "Using latest tag: $LATEST_TAG" && \
+            echo "$LATEST_TAG" > version.txt && \
+            git clone --branch "v$LATEST_TAG" --depth 1 https://github.com/mmb-irb/mddb-vre.git; \
+        fi; \
     else \
-        git clone --branch v${VERSION} --depth 1 https://github.com/mmb-irb/mddb-vre.git; \
+        git clone --branch "v${VERSION}" --depth 1 https://github.com/mmb-irb/mddb-vre.git; \
         echo "$VERSION" > version.txt; \
     fi
 
