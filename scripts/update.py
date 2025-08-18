@@ -65,7 +65,7 @@ class VersionChecker:
     #         print(f"Command execution error: {e}")
     #         return False, str(e)
 
-    def run_command(self, command: List[str], shell: bool = False) -> Tuple[bool, str]:
+    def run_command(self, command: List[str], shell: bool = False, stream_output: bool = False) -> Tuple[bool, str]:
         """Run a command and return success status and output."""
         try:
             if shell:
