@@ -180,6 +180,13 @@ class VersionChecker:
         print(f"   Running: {' '.join(command)}")
         success, output = self.run_command(command)
 
+        # Show command output regardless of success/failure
+        if output:
+            print("   📋 Command output:")
+            for line in output.split('\n'):
+                if line.strip():
+                    print(f"      {line}")
+
         if success:
             print(f"   ✅ Successfully updated {service_name}")
             # Update our local version tracking
@@ -188,7 +195,7 @@ class VersionChecker:
                 self.updatable_services.remove(service_name)
             return True
         else:
-            print(f"   ❌ Failed to update {service_name}: {output}")
+            print(f"   ❌ Failed to update {service_name}")
             return False
 
     def update_all_services(self, stack_name: str) -> int:
@@ -244,7 +251,7 @@ class VersionChecker:
             if choice == "1":
                 confirm = input(f"\n⚠️  Update all {len(self.updatable_services)} services? (y/N): ").strip().lower()
                 if confirm in ['y', 'yes']:
-                    stack_name = input("Enter stack name (default: 'my_stack'): ").strip() or "my_stack"
+                    stack_name = input("\n🧱 Enter stack name (default: 'my_stack'): ").strip() or "my_stack"
                     self.update_all_services(stack_name)
                 else:
                     print("❌ Update cancelled")
@@ -262,7 +269,7 @@ class VersionChecker:
                         service_name = self.updatable_services[service_choice - 1]
                         confirm = input(f"\n⚠️  Update {service_name}? (y/N): ").strip().lower()
                         if confirm in ['y', 'yes']:
-                            stack_name = input("Enter stack name (default: 'my_stack'): ").strip() or "my_stack"
+                            stack_name = input("\n🧱 Enter stack name (default: 'my_stack'): ").strip() or "my_stack"
                             self.update_service(service_name, stack_name)
                         else:
                             print("❌ Update cancelled")
