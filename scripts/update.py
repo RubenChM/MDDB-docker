@@ -56,6 +56,8 @@ class VersionChecker:
             return_code = process.poll()
             full_output = '\n'.join(output_lines)
 
+            print(return_code)
+
             if return_code == 0:
                 return True, full_output
             else:
@@ -72,7 +74,7 @@ class VersionChecker:
         # Use the exact command from the prompt
         command = f'curl -s "https://api.github.com/repos/{org}/{repo}/tags" | grep -m 1 \'"name":\' | sed -E \'s/.*"name": "([^"]+)".*/\\1/\''
 
-        success, output = self.run_command(command, shell=True, stream_output=True)
+        success, output = self.run_command(command, shell=True, stream_output=False)
 
         if not success or not output:
             print(f"    ⚠️  Could not fetch version for {org}/{repo}")
