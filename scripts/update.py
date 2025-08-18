@@ -136,6 +136,8 @@ class VersionChecker:
 
         for service_name in self.services.keys():
 
+            print(service_name, end=' ')
+
             current = self.service_versions.get(service_name, "Unknown")
             latest = self.repo_versions.get(service_name, "Unknown")
 
