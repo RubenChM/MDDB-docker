@@ -104,7 +104,7 @@ class VersionChecker:
         print(f"  🐳 Checking Docker service version for {service_name}...")
 
         # Use the exact command from the prompt
-        command = f'docker run --entrypoint "" --rm {image_name} sh -c "cat version.txt"'
+        command = f'docker run --entrypoint "" --rm {image_name} sh -c "cat /app/version.txt"'
 
         success, output = self.run_command(command, shell=True, stream_output=False)
 
@@ -249,7 +249,7 @@ class VersionChecker:
                 self.updatable_services.remove(service_name)
 
             # Send Slack notification about successful update
-            self.send_slack_notification(f"✅ Service *'{service_name}'* updated successfully from *{self.service_versions.get(service_name, 'unknown')}* to *{target_version}* in node *##node##*.")
+            self.send_slack_notification(f"✅ Service *{service_name}* updated successfully to version *{target_version}* in node *##node##*.")
 
             return True
         else:

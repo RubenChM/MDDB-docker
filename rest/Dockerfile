@@ -26,9 +26,9 @@ RUN if [ -z "$VERSION" ]; then \
             | grep -m 1 '"name":' \
             | sed -E 's/.*"name": "v?([^"]+)".*/\1/') && \
         if [ -z "$LATEST_TAG" ]; then \
-            echo "Failed to fetch latest tag, using main branch" && \
-            git clone --branch main --depth 1 https://github.com/mmb-irb/MDDB-REST-API.git && \
-            echo "main" > version.txt; \
+            echo "Failed to fetch latest tag, using master branch" && \
+            git clone --branch master --depth 1 https://github.com/mmb-irb/MDDB-REST-API.git && \
+            echo "master" > version.txt; \
         else \
             echo "Using latest tag: $LATEST_TAG" && \
             echo "$LATEST_TAG" > version.txt && \
