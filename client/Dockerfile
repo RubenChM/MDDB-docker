@@ -14,7 +14,7 @@ RUN if [ -z "$VERSION" ]; then \
         wget https://github.com/mmb-irb/MDposit-client-build/raw/refs/heads/main/build.zip; \
         curl -s "https://api.github.com/repos/mmb-irb/MDposit-client-build/tags" \
             | grep -m 1 '"name":' \
-            | sed -E 's/.*"name": "([^"]+)".*/\1/' > version.txt; \
+            | sed -E 's/.*"name": "v?([^"]+)".*/\1/' > version.txt; \
     else \
         wget https://raw.githubusercontent.com/mmb-irb/MDposit-client-build/v$VERSION/build.zip; \
         echo "$VERSION" > version.txt; \
