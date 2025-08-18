@@ -4,7 +4,7 @@ FROM node:18.19.0 AS build
 # Set working directory
 WORKDIR /app
 
-# Clone mddb-vre repo
+# Version argument
 ARG VERSION
 
 # If version is set, wget the specific version of the vre_lite

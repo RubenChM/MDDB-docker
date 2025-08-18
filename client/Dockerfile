@@ -5,7 +5,7 @@ FROM docker.io/library/nginx:alpine
 ARG VERSION
 ARG CLIENT_INNER_PORT
 
-# Define working dir
+# Version argument
 WORKDIR /app
 
 # If version is set, wget the specific version of the client build

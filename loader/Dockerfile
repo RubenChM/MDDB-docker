@@ -13,6 +13,21 @@ RUN apt-get update && \
 # Clone loader repo
 RUN git clone https://github.com/mmb-irb/MDDB-loader.git
 
+# Version argument
+ARG VERSION
+
+# If version is set, wget the specific version of the loader
+# Otherwise, use the latest version
+RUN if [ -z "$VERSION" ]; then \
+        git clone --branch master --depth 1 https://github.com/mmb-irb/MDDB-loader.git; \
+        curl -s "https://api.github.com/repos/mmb-irb/MDDB-loader/tags" \
+            | grep -m 1 '"name":' \
+            | sed -E 's/.*"name": "v?([^"]+)".*/\1/' > version.txt; \
+    else \
+        git clone --branch v${VERSION} --depth 1 https://github.com/mmb-irb/MDDB-loader.git; \
+        echo "$VERSION" > version.txt; \
+    fi
+
 # Define environment variables
 ARG DB_SERVER
 ARG DB_PORT

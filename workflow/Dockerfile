@@ -14,7 +14,7 @@ RUN apt-get update && \
 COPY goofys .
 RUN chmod +x goofys 
 
-# Define the build arguments
+# Version argument
 ARG VERSION
 
 # If version is set, wget the specific version of the workflow
