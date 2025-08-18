@@ -7,7 +7,7 @@ WORKDIR /app
 # Install libgl1 for avoiding problems with VMD and fuse for using fusermount and goofys
 RUN apt-get update && \
     apt-get install -y libgl1 && \
-    apt-get install -y fuse
+    apt-get install -y fuse curl
 
 # Download goofys and make it executable
 # RUN wget https://github.com/kahing/goofys/releases/latest/download/goofys
