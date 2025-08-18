@@ -135,6 +135,9 @@ class VersionChecker:
         print("-" * 60)
 
         for service_name in self.services.keys():
+            if service_name is None:
+                status = "❓ Unknown"
+                continue
             current = self.service_versions.get(service_name, "Unknown")
             latest = self.repo_versions.get(service_name, "Unknown")
 
