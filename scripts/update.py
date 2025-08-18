@@ -361,10 +361,6 @@ def main():
     checker = VersionChecker()
 
     try:
-        env_vars = checker.read_env_file('.env')
-        slack_webhook_url = env_vars.get('SLACK_WEBHOOK_URL')
-        node = env_vars.get('NODE')
-        print(f"🔗 Using Slack webhook: {slack_webhook_url} for node: {node}")
         # Initial version check
         checker.check_all_versions()
         checker.display_summary()
