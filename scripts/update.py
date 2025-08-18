@@ -123,10 +123,8 @@ class VersionChecker:
                 process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True)
 
             output_lines = []
-            full_output = ""
 
             if stream_output:
-                # Real-time streaming with limited rolling display
                 # Stream output in real-time
                 while True:
                     output = process.stdout.readline()
@@ -134,6 +132,14 @@ class VersionChecker:
                         break
                     if output:
                         print(output.strip())  # Print immediately
+                        output_lines.append(output.strip())
+            else:
+                # Silent mode - collect output without printing
+                while True:
+                    output = process.stdout.readline()
+                    if output == '' and process.poll() is not None:
+                        break
+                    if output:
                         output_lines.append(output.strip())
 
             return_code = process.poll()
