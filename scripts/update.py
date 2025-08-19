@@ -149,7 +149,7 @@ class VersionChecker:
             self.service_versions[service_name] = service_version
 
             # Compare versions
-            if repo_version and service_version:
+            if repo_version and service_version and service_version != "dev":
                 if self.compare_versions(repo_version, service_version):
                     print(f"    🆙 UPDATE AVAILABLE: {service_version} -> {repo_version}")
                     self.updatable_services.append(service_name)
@@ -160,6 +160,8 @@ class VersionChecker:
                 self.updatable_services.append(service_name)
             elif not repo_version and service_version:
                 print("    ⚠️  Cannot check updates (repo version unavailable)")
+            if repo_version and service_version and service_version == "dev":
+                print("    📦 Service in development mode")
             else:
                 print("    ❓ Cannot determine versions")
 
@@ -239,6 +241,8 @@ class VersionChecker:
 
             if service_name in self.updatable_services:
                 status = "🆙 Updatable"
+            elif current != "dev":
+                status = "📦 Development"
             elif current != "Unknown" and latest != "Unknown":
                 status = "✅ Up to date"
             else:
