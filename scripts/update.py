@@ -65,19 +65,6 @@ class VersionChecker:
             print(f"Command execution error: {e}")
             return False, str(e)
 
-    # def run_command(self, command: List[str], shell: bool = False, stream_output: bool = False) -> Tuple[bool, str]:
-    #     """Run a command and return success status and output."""
-    #     try:
-    #         if shell:
-    #             result = subprocess.run(command, shell=True, capture_output=True, text=True, check=True)
-    #         else:
-    #             result = subprocess.run(command, capture_output=True, text=True, check=True)
-    #         return True, result.stdout.strip()
-    #     except subprocess.CalledProcessError as e:
-    #         return False, e.stderr.strip() if e.stderr else str(e)
-    #     except Exception as e:
-    #         return False, str(e)
-
     def get_repo_version(self, org: str, repo: str) -> Optional[str]:
         """Get the latest version from GitHub repo tags."""
         print(f"  📡 Fetching latest version for {org}/{repo}...")
@@ -177,16 +164,6 @@ class VersionChecker:
                     key, value = line.split('=', 1)
                     env_vars[key] = value
         return env_vars
-
-    # def send_slack_notification(self, message: str):
-    #     """Send a notification to Slack (placeholder function)."""
-    #     # This is a placeholder. Implement actual Slack notification logic here.
-    #     print(f"🔔 Sending Slack notification: {message}")
-    #     env_vars = self.read_env_file('.env')
-    #     slack_webhook_url = env_vars.get('SLACK_WEBHOOK_URL')
-    #     node = env_vars.get('NODE')
-    #     message = message.replace("##node##", node)
-    #     requests.post(slack_webhook_url, json={"text": message})
 
     def send_slack_notification(self, message: str):
         """Send a notification to Slack using urllib (no external dependencies)."""
@@ -291,7 +268,7 @@ class VersionChecker:
                 self.updatable_services.remove(service_name)
 
             # Send Slack notification about successful update
-            self.send_slack_notification(f"✅ Service *{service_name}* updated successfully to version *{target_version}* in node *##node##*.")
+            self.send_slack_notification(f"✅ Service *{service_name}* successfully updated to version *{target_version}* in node *##node##*.")
 
             return True
         else:
