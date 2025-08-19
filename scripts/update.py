@@ -241,7 +241,7 @@ class VersionChecker:
 
             if service_name in self.updatable_services:
                 status = "🆙 Updatable"
-            elif current != "dev":
+            elif current == "dev":
                 status = "📦 Development"
             elif current != "Unknown" and latest != "Unknown":
                 status = "✅ Up to date"
