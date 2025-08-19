@@ -160,8 +160,6 @@ class VersionChecker:
                 self.updatable_services.append(service_name)
             elif not repo_version and service_version:
                 print("    ⚠️  Cannot check updates (repo version unavailable)")
-            if repo_version and service_version and service_version == "dev":
-                print("    📦 Service in development mode")
             else:
                 print("    ❓ Cannot determine versions")
 
