@@ -5,7 +5,6 @@ import json
 import urllib.request
 import os
 import sys
-# from typing import Dict, List, Tuple, Optional
 from typing import List, Tuple, Optional
 
 
