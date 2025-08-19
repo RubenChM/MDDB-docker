@@ -10,7 +10,7 @@ RUN apt-get update && \
     curl -sL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install -y nodejs
 
-# clone git repository
+# Clone git repository
 RUN git clone https://github.com/mmb-irb/MDDB-loader.git
 
 # Set version to dev
