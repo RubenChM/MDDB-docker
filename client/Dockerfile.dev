@@ -41,6 +41,9 @@ ARG CLIENT_INNER_PORT
 # Define working dir
 WORKDIR /app
 
+# Set version to dev
+RUN echo "dev" > version.txt
+
 # Copy from the previous stage
 COPY --from=build /app/MDposit-client/build /usr/share/nginx/html
 
