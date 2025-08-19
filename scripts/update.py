@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 import subprocess
-# import json
-import requests
+import json
+import urllib.request
 import os
 import sys
 # from typing import Dict, List, Tuple, Optional
@@ -176,15 +176,53 @@ class VersionChecker:
                     env_vars[key] = value
         return env_vars
 
+    # def send_slack_notification(self, message: str):
+    #     """Send a notification to Slack (placeholder function)."""
+    #     # This is a placeholder. Implement actual Slack notification logic here.
+    #     print(f"🔔 Sending Slack notification: {message}")
+    #     env_vars = self.read_env_file('.env')
+    #     slack_webhook_url = env_vars.get('SLACK_WEBHOOK_URL')
+    #     node = env_vars.get('NODE')
+    #     message = message.replace("##node##", node)
+    #     requests.post(slack_webhook_url, json={"text": message})
+
     def send_slack_notification(self, message: str):
-        """Send a notification to Slack (placeholder function)."""
-        # This is a placeholder. Implement actual Slack notification logic here.
+        """Send a notification to Slack using urllib (no external dependencies)."""
+
         print(f"🔔 Sending Slack notification: {message}")
-        env_vars = self.read_env_file('.env')
-        slack_webhook_url = env_vars.get('SLACK_WEBHOOK_URL')
-        node = env_vars.get('NODE')
-        message = message.replace("##node##", node)
-        requests.post(slack_webhook_url, json={"text": message})
+
+        try:
+            env_vars = self.read_env_file('.env')
+            slack_webhook_url = env_vars.get('SLACK_WEBHOOK_URL')
+            node = env_vars.get('NODE')
+
+            if not slack_webhook_url:
+                print("⚠️  SLACK_WEBHOOK_URL not found in .env file")
+                return
+
+            # Replace placeholder with actual node value
+            message = message.replace("##node##", node if node else "unknown")
+
+            # Prepare the payload
+            payload = {"text": message}
+            data = json.dumps(payload).encode('utf-8')
+
+            # Create the request
+            req = urllib.request.Request(
+                slack_webhook_url,
+                data=data,
+                headers={'Content-Type': 'application/json'}
+            )
+
+            # Send the request
+            with urllib.request.urlopen(req, timeout=10) as response:
+                if response.status == 200:
+                    print("✅ Slack notification sent successfully")
+                else:
+                    print(f"⚠️  Slack notification failed with status: {response.status}")
+
+        except Exception as e:
+            print(f"❌ Failed to send Slack notification: {e}")
 
     def display_summary(self):
         """Display a summary of version status."""
