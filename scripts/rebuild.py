@@ -81,7 +81,7 @@ def main():
                 print(f"Version for {service}: {version}")
 
                 dc_command = docker_compose_script()
-                dc_command.extend(['run', '--rm', 'utils_image', 'version_tracker.py', service, version])
+                dc_command.extend(['run', '--rm', 'utils', 'version_tracker.py', service, version])
                 run_command(dc_command)
             except subprocess.CalledProcessError as e:
                 print(f"Failed to get version for {service}: {e.stderr}")
