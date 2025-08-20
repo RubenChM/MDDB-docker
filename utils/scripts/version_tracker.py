@@ -86,9 +86,24 @@ class VersionTracker:
             # Access/create collection
             self.collection = self.db[collection_name]
 
-            # Create index for better performance
-            self.collection.create_index([("service", 1), ("timestamp", -1)])
-            print("📊 Index created on service and timestamp fields")
+            # Create compound unique index to prevent duplicates
+            try:
+                self.collection.create_index(
+                    [("service", 1), ("version", 1)],
+                    unique=True,
+                    name="unique_service_version"
+                )
+                print("📊 Unique compound index created on service and version fields")
+            except Exception as index_error:
+                # Index might already exist, that's fine
+                print("📊 Compound index already exists or creation failed (continuing anyway)")
+
+            # Create regular index for performance on timestamp
+            try:
+                self.collection.create_index([("timestamp", -1)])
+                print("📊 Index created on timestamp field")
+            except Exception:
+                print("📊 Timestamp index already exists or creation failed")
 
             return True
 
@@ -97,16 +112,24 @@ class VersionTracker:
             return False
 
     def insert_version_document(self, service: str, version: str) -> bool:
-        """Insert a new version document."""
+        """Insert a new version document, avoiding duplicates."""
         try:
+            # Check if this service-version combination already exists
+            existing_doc = self.collection.find_one({
+                "service": service,
+                "version": version
+            })
+
+            if existing_doc:
+                print(f"⚠️  Version '{version}' for service '{service}' already exists (inserted on {existing_doc.get('timestamp', 'unknown')})")
+                print("📋 Skipping duplicate insertion")
+                return True  # Return True as it's not an error, just already exists
+
             # Prepare document
             document = {
                 "service": service,
                 "version": version,
                 "timestamp": datetime.utcnow(),
-                # "node": os.getenv('NODE', 'unknown'),
-                # "environment": os.getenv('ENVIRONMENT', 'unknown'),
-                # "inserted_by": "version_tracker_script"
             }
 
             print(f"📝 Inserting version document for service '{service}' version '{version}'")
@@ -123,8 +146,9 @@ class VersionTracker:
             return True
 
         except DuplicateKeyError as e:
-            print(f"⚠️  Duplicate document detected: {e}")
-            return False
+            print(f"⚠️  Duplicate service-version combination detected: {e}")
+            print(f"📋 Version '{version}' for service '{service}' already exists")
+            return True  # Return True as it's not an error, just already exists
         except Exception as e:
             print(f"❌ Error inserting document: {e}")
             return False
@@ -152,8 +176,7 @@ class VersionTracker:
             for version in versions:
                 timestamp = version.get('timestamp', 'Unknown')
                 ver = version.get('version', 'Unknown')
-                node = version.get('node', 'Unknown')
-                print(f"  {timestamp} | {ver} | Node: {node}")
+                print(f"  {timestamp} | {ver}")
         else:
             print(f"📋 No previous versions found for '{service}'")
 
