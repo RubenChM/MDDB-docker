@@ -199,8 +199,8 @@ services:
       BACKUP_INTERVAL: ${DB_BACKUP_INTERVAL}
     networks:
       - data_network
-    depends_on:
-      - mongodb
+    # depends_on:
+    #   - mongodb
     deploy:
       replicas: ${DB_BACKUP_REPLICAS}
       resources:
