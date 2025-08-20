@@ -310,10 +310,15 @@ services:
         DB_VRE_AUTH_USER: ${VRE_LITE_DB_LOGIN}
         DB_VRE_AUTH_PASSWORD: ${VRE_LITE_DB_PASSWORD}
         DB_VRE_AUTHSOURCE: ${VRE_LITE_MONGO_DATABASE}
+    environment:
+      DB_SERVER: ${DB_SERVER}
+      DB_PORT: ${DB_OUTER_PORT}
+      DB_VRE_NAME: ${VRE_LITE_MONGO_DATABASE}
+      DB_VRE_AUTH_USER: ${VRE_LITE_DB_LOGIN}
+      DB_VRE_AUTH_PASSWORD: ${VRE_LITE_DB_PASSWORD}
+      DB_VRE_AUTHSOURCE: ${VRE_LITE_MONGO_DATABASE}
     networks:
       - data_network
-    # depends_on:
-    #   - mongodb
     deploy:
       replicas: ${UTILS_REPLICAS}  # Ensure this service is not deployed by default as it is a one-time task
       resources:
