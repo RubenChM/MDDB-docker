@@ -292,6 +292,15 @@ def deploy_stack(rm):
         env_vars = read_env_file('.env')
     poll_minio(env_vars.get('MINIO_API_OUTER_PORT'))
 
+    # Update services versions
+    try:
+        subprocess.run(['python3', 'update-services-versions.py'], check=True)
+        print("Services versions updated successfully.")
+    except subprocess.CalledProcessError as e:
+        print(f"Error updating services versions: {e}")
+    except FileNotFoundError:
+        print("Error: update-services-versions.py not found.")
+
     print(f"Stack {stack_name} deployed.")
     subprocess.run(['docker', 'stack', 'services', stack_name])
 
