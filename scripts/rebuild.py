@@ -64,8 +64,19 @@ def main():
 
         # Update services
         for service in args.services:
+            # update service in the stack
             update_command = ['docker', 'service', 'update', '--force', f'{args.stack}_{service}']
             run_command(update_command)
+
+            # Get version of the service
+            version_command = ['docker', 'run', '--entrypoint', '""', '--rm', f'{service}_image', 'sh', '-c', '"cat /app/version.txt"']
+            run_command(version_command)
+            # Get result of version command
+            try:
+                result = subprocess.run(version_command, capture_output=True, text=True, check=True)
+                print(f"Version for {service}: {result.stdout.strip()}")
+            except subprocess.CalledProcessError as e:
+                print(f"Failed to get version for {service}: {e.stderr}")
 
         # Prune containers and images
         run_command(['docker', 'container', 'prune', '-f'])
