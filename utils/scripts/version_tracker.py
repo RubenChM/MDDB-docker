@@ -5,7 +5,7 @@ import os
 import sys
 from datetime import datetime
 from pymongo import MongoClient
-from pymongo.errors import ConnectionFailure, DuplicateKeyError
+from pymongo.errors import ConnectionFailure
 
 
 class VersionTracker:
@@ -86,17 +86,17 @@ class VersionTracker:
             # Access/create collection
             self.collection = self.db[collection_name]
 
-            # Create compound unique index to prevent duplicates
+            # Create unique index on service field to ensure only one version per service
             try:
                 self.collection.create_index(
-                    [("service", 1), ("version", 1)],
+                    [("service", 1)],
                     unique=True,
-                    name="unique_service_version"
+                    name="unique_service"
                 )
-                print("📊 Unique compound index created on service and version fields")
+                print("📊 Unique index created on service field")
             except Exception as index_error:
                 # Index might already exist, that's fine
-                print("📊 Compound index already exists or creation failed (continuing anyway)")
+                print("📊 Service index already exists or creation failed (continuing anyway)")
 
             # Create regular index for performance on timestamp
             try:
@@ -112,18 +112,10 @@ class VersionTracker:
             return False
 
     def insert_version_document(self, service: str, version: str) -> bool:
-        """Insert a new version document, avoiding duplicates."""
+        """Insert or update version document for a service (only one version per service)."""
         try:
-            # Check if this service-version combination already exists
-            existing_doc = self.collection.find_one({
-                "service": service,
-                "version": version
-            })
-
-            if existing_doc:
-                print(f"⚠️  Version '{version}' for service '{service}' already exists (inserted on {existing_doc.get('timestamp', 'unknown')})")
-                print("📋 Skipping duplicate insertion")
-                return True  # Return True as it's not an error, just already exists
+            # Check if this service already exists with any version
+            existing_doc = self.collection.find_one({"service": service})
 
             # Prepare document
             document = {
@@ -132,53 +124,88 @@ class VersionTracker:
                 "timestamp": datetime.utcnow(),
             }
 
-            print(f"📝 Inserting version document for service '{service}' version '{version}'")
+            if existing_doc:
+                old_version = existing_doc.get('version', 'unknown')
+                if old_version == version:
+                    print(f"⚠️  Service '{service}' already has version '{version}' (inserted on {existing_doc.get('timestamp', 'unknown')})")
+                    print("📋 Skipping - same version already exists")
+                    return True
+                else:
+                    print(f"🔄 Updating service '{service}' from version '{old_version}' to '{version}'")
 
-            # Insert document
-            result = self.collection.insert_one(document)
+                    # Update existing document
+                    result = self.collection.update_one(
+                        {"service": service},
+                        {"$set": document}
+                    )
 
-            print(f"✅ Document inserted successfully with ID: {result.inserted_id}")
+                    if result.modified_count > 0:
+                        print(f"✅ Version updated successfully for service '{service}'")
+                    else:
+                        print("⚠️  No changes made - document might be identical")
+            else:
+                print(f"📝 Creating new version document for service '{service}' version '{version}'")
 
-            # Show document count for this service
-            service_count = self.collection.count_documents({"service": service})
-            print(f"📊 Total versions tracked for '{service}': {service_count}")
+                # Insert new document
+                result = self.collection.insert_one(document)
+                print(f"✅ Document inserted successfully with ID: {result.inserted_id}")
+
+            # Show current version for this service
+            current_doc = self.collection.find_one({"service": service})
+            if current_doc:
+                print(f"📊 Current version for '{service}': {current_doc.get('version', 'unknown')}")
 
             return True
 
-        except DuplicateKeyError as e:
-            print(f"⚠️  Duplicate service-version combination detected: {e}")
-            print(f"📋 Version '{version}' for service '{service}' already exists")
-            return True  # Return True as it's not an error, just already exists
         except Exception as e:
-            print(f"❌ Error inserting document: {e}")
+            print(f"❌ Error inserting/updating document: {e}")
             return False
 
-    def get_service_versions(self, service: str, limit: int = 5) -> list:
-        """Get recent versions for a service."""
+    def get_service_version(self, service: str) -> dict:
+        """Get the current version for a service."""
         try:
-            versions = list(self.collection.find(
-                {"service": service}
-            ).sort("timestamp", -1).limit(limit))
-
-            return versions
+            version_doc = self.collection.find_one({"service": service})
+            return version_doc if version_doc else {}
 
         except Exception as e:
-            print(f"❌ Error retrieving versions: {e}")
+            print(f"❌ Error retrieving version: {e}")
+            return {}
+
+    def get_all_services(self) -> list:
+        """Get all services and their current versions."""
+        try:
+            services = list(self.collection.find({}).sort("service", 1))
+            return services
+
+        except Exception as e:
+            print(f"❌ Error retrieving services: {e}")
             return []
 
-    def show_recent_versions(self, service: str, limit: int = 5):
-        """Show recent versions for a service."""
-        versions = self.get_service_versions(service, limit)
-
-        if versions:
-            print(f"\n📈 Recent versions for '{service}' (last {len(versions)}):")
-            print("-" * 60)
-            for version in versions:
-                timestamp = version.get('timestamp', 'Unknown')
-                ver = version.get('version', 'Unknown')
-                print(f"  {timestamp} | {ver}")
+    def show_service_info(self, service: str = None):
+        """Show current version info for a service or all services."""
+        if service:
+            version_doc = self.get_service_version(service)
+            if version_doc:
+                timestamp = version_doc.get('timestamp', 'Unknown')
+                version = version_doc.get('version', 'Unknown')
+                print(f"\n📈 Current version for '{service}':")
+                print("-" * 50)
+                print(f"  Version: {version}")
+                print(f"  Updated: {timestamp}")
+            else:
+                print(f"📋 No version found for service '{service}'")
         else:
-            print(f"📋 No previous versions found for '{service}'")
+            services = self.get_all_services()
+            if services:
+                print(f"\n📈 All tracked services ({len(services)}):")
+                print("-" * 60)
+                for svc in services:
+                    service_name = svc.get('service', 'Unknown')
+                    version = svc.get('version', 'Unknown')
+                    timestamp = svc.get('timestamp', 'Unknown')
+                    print(f"  {service_name:15} | {version:10} | {timestamp}")
+            else:
+                print("📋 No services found in version tracking")
 
     def close(self):
         """Close MongoDB connection."""
@@ -217,7 +244,8 @@ def parse_arguments():
 Examples:
   python3 version_tracker.py client v1.2.0
   python3 version_tracker.py --service vre_lite --version v2.1.3
-  python3 version_tracker.py rest 1.0.0 --show-recent
+  python3 version_tracker.py rest 1.0.0 --show-info
+  python3 version_tracker.py client 2.0.0 --show-all
         """
     )
 
@@ -232,9 +260,15 @@ Examples:
     )
 
     parser.add_argument(
-        '--show-recent',
+        '--show-info',
         action='store_true',
-        help='Show recent versions for the service after insertion'
+        help='Show current version info for the service after update'
+    )
+
+    parser.add_argument(
+        '--show-all',
+        action='store_true',
+        help='Show all tracked services and their versions'
     )
 
     parser.add_argument(
@@ -280,13 +314,17 @@ def main():
         if not tracker.ensure_collection(args.collection):
             sys.exit(1)
 
-        # Insert version document
+        # Insert/update version document
         if not tracker.insert_version_document(args.service, args.version):
             sys.exit(1)
 
-        # Show recent versions if requested
-        if args.show_recent:
-            tracker.show_recent_versions(args.service)
+        # Show service info if requested
+        if args.show_info:
+            tracker.show_service_info(args.service)
+
+        # Show all services if requested
+        if args.show_all:
+            tracker.show_service_info()
 
         print("\n✅ Version tracking completed successfully!")
 
