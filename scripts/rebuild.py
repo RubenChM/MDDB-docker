@@ -29,6 +29,16 @@ def command_exists(cmd):
         return False
 
 
+def docker_compose_script():
+    if command_exists(['docker-compose', 'version']):
+        return ['docker-compose']
+    elif command_exists(['docker', 'compose', 'version']):
+        return ['docker', 'compose']
+    else:
+        print("Error: Neither 'docker-compose' nor 'docker compose' commands are available.")
+        sys.exit(1)
+
+
 def main():
     parser = argparse.ArgumentParser(description='Rebuild and push one or more services from node.')
     group = parser.add_mutually_exclusive_group()
@@ -48,14 +58,8 @@ def main():
         subprocess.run("export $(grep -v '^#' .env | xargs)", shell=True, check=True, executable='/bin/bash')
 
         # Build services with --no-cache
-        build_command = []
-        if command_exists(['docker-compose', 'version']):
-            build_command = ['docker-compose', 'build']
-        elif command_exists(['docker', 'compose', 'version']):
-            build_command = ['docker', 'compose', 'build']
-        else:
-            print("Error: Neither 'docker-compose' nor 'docker compose' commands are available.")
-            sys.exit(1)
+        build_command = docker_compose_script()
+        build_command.append('build')
 
         for service in args.services:
             build_command.extend(['--no-cache', service])
@@ -73,7 +77,12 @@ def main():
             # Get result of version command
             try:
                 result = subprocess.run(version_command, capture_output=True, text=True, check=True)
-                print(f"Version for {service}: {result.stdout.strip()}")
+                version = result.stdout.strip()
+                print(f"Version for {service}: {version}")
+
+                dc_command = docker_compose_script()
+                dc_command.extend(['run', '--rm', 'utils_image', 'version_tracker.py', service, version])
+                run_command(dc_command)
             except subprocess.CalledProcessError as e:
                 print(f"Failed to get version for {service}: {e.stderr}")
 
