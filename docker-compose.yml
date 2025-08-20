@@ -304,8 +304,8 @@ services:
     build:
       context: ./utils   # folder to search Dockerfile for this image
     environment:
-      DB_SERVER: ${DB_SERVER}
-      DB_PORT: ${DB_OUTER_PORT}
+      DB_SERVER: ${VRE_LITE_DB_SERVER}
+      DB_PORT: ${VRE_LITE_DB_OUTER_PORT}
       DB_VRE_NAME: ${VRE_LITE_MONGO_DATABASE}
       DB_VRE_AUTH_USER: ${VRE_LITE_DB_LOGIN}
       DB_VRE_AUTH_PASSWORD: ${VRE_LITE_DB_PASSWORD}
