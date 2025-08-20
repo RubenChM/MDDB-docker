@@ -80,6 +80,7 @@ def main():
                 version = result.stdout.strip()
                 print(f"Version for {service}: {version}")
 
+                # Run version_tracker.py to update the version in the database
                 dc_command = docker_compose_script()
                 dc_command.extend(['run', '--rm', 'utils', 'version_tracker.py', service, version])
                 run_command(dc_command)
