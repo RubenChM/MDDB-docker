@@ -69,7 +69,7 @@ def main():
             run_command(update_command)
 
             # Get version of the service
-            version_command = ['docker', 'run', '--entrypoint', '""', '--rm', f'{service}_image', 'sh', '-c', '"cat /app/version.txt"']
+            version_command = ['docker', 'run', '--entrypoint', '\"\"', '--rm', f'{service}_image', 'sh', '-c', '\"cat /app/version.txt\"']
             # Get result of version command
             try:
                 result = subprocess.run(version_command, capture_output=True, text=True, check=True)
