@@ -157,6 +157,9 @@ services:
       MONGO_INITDB_DATABASE: ${DB_NAME}
       LOADER_DB_LOGIN: ${LOADER_DB_LOGIN}
       LOADER_DB_PASSWORD: ${LOADER_DB_PASSWORD}
+      MONGO_VRE_DATABASE: ${MONGO_VRE_DATABASE}
+      VRE_DB_LOGIN: ${VRE_DB_LOGIN}
+      VRE_DB_PASSWORD: ${VRE_DB_PASSWORD}
       REST_DB_LOGIN: ${REST_DB_LOGIN}
       REST_DB_PASSWORD: ${REST_DB_PASSWORD}
     ports:
@@ -295,6 +298,31 @@ services:
         condition: any   # Restart always
       update_config:
         order: start-first  # Priority over other services
+
+  utils:
+    image: utils_image   # name of utils image
+    build:
+      context: ./utils   # folder to search Dockerfile for this image
+      args:
+        DB_SERVER: ${DB_SERVER}
+        DB_PORT: ${DB_OUTER_PORT}
+        DB_VRE_NAME: ${VRE_LITE_MONGO_DATABASE}
+        DB_VRE_AUTH_USER: ${VRE_LITE_DB_LOGIN}
+        DB_VRE_AUTH_PASSWORD: ${VRE_LITE_DB_PASSWORD}
+        DB_VRE_AUTHSOURCE: ${VRE_LITE_MONGO_DATABASE}
+    networks:
+      - data_network
+    depends_on:
+      - mongodb
+    deploy:
+      replicas: ${UTILS_REPLICAS}  # Ensure this service is not deployed by default as it is a one-time task
+      resources:
+        limits:
+          cpus: ${UTILS_CPU_LIMIT}   # Specify the limit number of CPUs
+          memory: ${UTILS_MEMORY_LIMIT}   # Specify the limit memory
+        reservations:
+          cpus: ${UTILS_CPU_RESERVATION}   # Specify the reserved number of CPUs
+          memory: ${UTILS_MEMORY_RESERVATION}   # Specify the reserved memory
 
 volumes:
   db_volume:

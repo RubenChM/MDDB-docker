@@ -18,3 +18,15 @@ db.createUser({
     { role: 'read', db: process.env.MONGO_INITDB_DATABASE }
   ]
 });
+
+// Switch to the desired database
+db = db.getSiblingDB(process.env.VRE_LITE_MONGO_DATABASE);
+
+// Create a user with readWrite permissions on <MONGO_VRE_DATABASE> database. This user will be used for the VRE
+db.createUser({
+  user: process.env.VRE_LITE_DB_LOGIN,
+  pwd: process.env.VRE_LITE_DB_PASSWORD,
+  roles: [
+    { role: 'readWrite', db: process.env.VRE_LITE_MONGO_DATABASE }
+  ]
+});
