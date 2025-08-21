@@ -39,6 +39,12 @@ ARG MINIO_PROTOCOL
 ARG MINIO_URL
 ARG MINIO_PORT
 ARG MINIO_USER
+ARG DB_USER
+ARG DB_PASS
+ARG DB_SERVER
+ARG DB_PORT
+ARG DB_NAME
+ARG PAT
 ARG NODE_NAME
 
 RUN echo "BASE_URL_DEVELOPMENT=${VRE_LITE_BASE_URL_DEVELOPMENT}" > /app/mddb-vre/.env && \
@@ -51,6 +57,12 @@ RUN echo "BASE_URL_DEVELOPMENT=${VRE_LITE_BASE_URL_DEVELOPMENT}" > /app/mddb-vre
     echo "MINIO_URL=${MINIO_URL}" >> /app/mddb-vre/.env && \
     echo "MINIO_PORT=${MINIO_PORT}" >> /app/mddb-vre/.env && \
     echo "MINIO_USER=${MINIO_USER}" >> /app/mddb-vre/.env && \
+    echo "DB_USER=${DB_USER}" >> /app/mddb-vre/.env && \
+    echo "DB_PASS=${DB_PASS}" >> /app/mddb-vre/.env && \
+    echo "DB_SERVER=${DB_SERVER}" >> /app/mddb-vre/.env && \
+    echo "DB_PORT=${DB_PORT}" >> /app/mddb-vre/.env && \
+    echo "DB_NAME=${DB_NAME}" >> /app/mddb-vre/.env && \
+    echo "PAT=${PAT}" >> /app/mddb-vre/.env && \
     echo "NODE_NAME=${NODE_NAME}" >> /app/mddb-vre/.env
 
 # Change working directory to /app/mddb-vre

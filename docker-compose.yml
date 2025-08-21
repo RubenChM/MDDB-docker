@@ -275,6 +275,12 @@ services:
         MINIO_PORT: ${APACHE_MINIO_OUTER_PORT}
         MINIO_USER: ${MINIO_USER}
         MINIO_PASSWORD: ${MINIO_PASSWORD}
+        DB_USER: ${VRE_LITE_DB_LOGIN}
+        DB_PASS: ${VRE_LITE_DB_PASSWORD}
+        DB_SERVER: ${VRE_LITE_DB_SERVER}
+        DB_PORT: ${VRE_LITE_DB_OUTER_PORT}
+        DB_NAME: ${VRE_LITE_MONGO_DATABASE}
+        PAT: ${GH_PAT}
         NODE_NAME: ${NODE}
     volumes:
       - vre_lite_log_volume:/vre_lite

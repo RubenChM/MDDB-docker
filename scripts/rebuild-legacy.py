@@ -29,6 +29,16 @@ def command_exists(cmd):
         return False
 
 
+def docker_compose_script():
+    if command_exists(['docker-compose', 'version']):
+        return ['docker-compose']
+    elif command_exists(['docker', 'compose', 'version']):
+        return ['docker', 'compose']
+    else:
+        print("Error: Neither 'docker-compose' nor 'docker compose' commands are available.")
+        sys.exit(1)
+
+
 def main():
     parser = argparse.ArgumentParser(description='Rebuild and push a concrete version service from node.')
     group = parser.add_mutually_exclusive_group()
@@ -64,6 +74,21 @@ def main():
         # Update service
         update_command = ['docker', 'service', 'update', '--force', f'{args.stack}_{args.service}']
         run_command(update_command)
+
+        # Get version of the service
+        version_command = ['docker', 'run', '--entrypoint', '', '--rm', f'{args.service}_image', 'sh', '-c', 'cat /app/version.txt']
+        # Get result of version command
+        try:
+            result = subprocess.run(version_command, capture_output=True, text=True, check=True)
+            version = result.stdout.strip()
+            print(f"Version for {args.service}: {version}")
+
+            # Run version_tracker.py to update the version in the database
+            dc_command = docker_compose_script()
+            dc_command.extend(['run', '--rm', 'utils', 'version_tracker.py', args.service, version])
+            run_command(dc_command)
+        except subprocess.CalledProcessError as e:
+            print(f"Failed to get version for {args.service}: {e.stderr}")
 
         # Prune containers and images
         run_command(['docker', 'container', 'prune', '-f'])
