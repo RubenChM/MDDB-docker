@@ -80,6 +80,9 @@ FROM docker.io/library/nginx:alpine
 # Install necessary packages
 RUN apk --no-cache add nodejs npm curl
 
+# Install Docker CLI to allow interaction with Docker from within the container
+RUN apk add --no-cache docker-cli
+
 # Install pm2
 RUN npm install pm2 -g
 
