@@ -90,8 +90,6 @@ WORKDIR /app
 COPY --from=build /app/mddb-vre/.output /app/.output
 # Copy the version file
 COPY --from=build /app/version.txt /app/version.txt
-# DEBUG!!!
-COPY --from=build /app/mddb-vre/.env /app/.env
 
 # Copy the pm2 configuration file
 COPY ecosystem.config.cjs .
