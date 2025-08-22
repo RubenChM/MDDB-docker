@@ -46,6 +46,8 @@ Example for rebuilding the **client** and **vre_lite** services from the **my_st
 python3 scripts/rebuild.py -s client vre_lite -t my_stack
 ```
 
+Note that this script will **rebuild the service** to the **latest** available **version**.
+
 For performing the same process step by step:
 
 1. **Rebuild the Service Image Without Cache:** Use docker-compose to rebuild the image locally, targeting only the service you want to update:
@@ -71,6 +73,20 @@ For performing the same process step by step:
     ```sh
     docker image prune -f
     ```
+
+A **rollback script** is provided for rebuilding an old version of **one service** in an **automatic** way. Please execute the script, located in [**scripts/rebuild-legacy.py**](../scripts/rebuild-legacy.py). 
+
+How to execute the help script from the root of this repository:
+
+```sh
+python3 scripts/rebuild-legacy.py -h
+```
+
+Example for rollback to the **version 0.0.1** of the **client** service from the **my_stack** stack: 
+
+```sh
+python3 scripts/rebuild-legacy.py -s client vre_lite -v 0.0.1 -t my_stack
+```
 
 ## Clean docker
 
@@ -156,6 +172,12 @@ In case of errors, use the --no-trunc flag for the sake of seeing the whole erro
 docker service ps my_stack_mongodb --no-trunc
 ```
 
+## Enter any container bypassing entrypoint
+
+```sh
+  docker exec -it <container_ID> /bin/sh
+```
+
 ## Execute mongo docker in terminal mode
 
 ```sh
@@ -188,6 +210,23 @@ Additionally, users are able to access the database as a **root/admin** user, as
 
 Take into account that acessing mongoDB as **root/admin** user is **not recommended** as with this user there are **no restrictions** once inside the database. We strongly recommend to use the **users** defined in the [**mongo-init.js**](../mongodb/mongo-init.js) file for accessing the database.
 
+## Add new user to Mongo
+
+The actions of the **mongo-init.js**](../mongodb/mongo-init.js) file are executed only once, when the mongodb service is deployed for the first time. For avoiding to wipe out the database and deploying the service from scratch, execute the following code for adding a new user to the database:
+
+```js
+docker exec -it <mongo_container_ID> mongosh \
+  "mongodb://$MONGO_INITDB_ROOT_USERNAME:$MONGO_INITDB_ROOT_PASSWORD@$DB_SERVER:27017/admin" \
+  --eval "
+    db = db.getSiblingDB('$VRE_LITE_MONGO_DATABASE');
+    db.createUser({
+      user: '$VRE_LITE_DB_LOGIN',
+      pwd: '$VRE_LITE_DB_PASSWORD',
+      roles: [{role: 'readWrite', db: '$VRE_LITE_MONGO_DATABASE'}]
+    });
+  "
+```
+
 ## Mongo restore
 
 If there is a previous version of the database it can be copied into the **my_stack_mongodb** service. This is the instruction for performing a `mongorestore` from a **mongo dump**:
@@ -198,6 +237,12 @@ If there is a previous version of the database it can be copied into the **my_st
 * **ROOT_USER:** Root user for the DB.
 * **ROOT_PASSWORD:** Root password for the DB.
 * **DB_TO_RESTORE:** Name of the database to restore.
+
+## Check image version
+
+```sh
+docker run --entrypoint "" --rm <image_name> sh -c "cat /app/version.txt"
+```
 
 ## Docker logs
 
