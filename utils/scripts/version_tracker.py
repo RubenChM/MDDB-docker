@@ -94,7 +94,7 @@ class VersionTracker:
                     name="unique_service"
                 )
                 print("📊 Unique index created on service field")
-            except Exception as index_error:
+            except Exception:
                 # Index might already exist, that's fine
                 print("📊 Service index already exists or creation failed (continuing anyway)")
 
