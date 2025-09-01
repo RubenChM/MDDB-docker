@@ -158,7 +158,7 @@ The actions of the **mongo-init.js**](../mongodb/mongo-init.js) file are execute
 
 ```js
 docker exec -it <mongo_container_ID> mongosh \
-  "mongodb://$MONGO_INITDB_ROOT_USERNAME:$MONGO_INITDB_ROOT_PASSWORD@$DB_SERVER:27017/admin" \
+  "mongodb://$MONGO_INITDB_ROOT_USERNAME:$MONGO_INITDB_ROOT_PASSWORD@$VRE_LITE_DB_SERVER:27017/admin" \
   --eval "
     db = db.getSiblingDB('$VRE_LITE_MONGO_DATABASE');
     db.createUser({
