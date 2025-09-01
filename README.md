@@ -223,6 +223,7 @@ The different sections of the documentation are:
 * [**Set Up Virtual Machine**](readme/setup.md)
 * [**Set Up Configuration Files**](readme/config.md)
 * [**Deploy Docker Swarm**](readme/docker-swarm.md)
+* [**Update services**](readme/update.md)
 
 ### Manually step by step
 

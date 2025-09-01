@@ -30,64 +30,6 @@ Ie when developing and doing changes in git repo.
     docker-compose up -d
     ```
 
-## Rebuild service(s)
-
-A **rebuild script** is provided for rebuilding **one or more services** in an **automatic** way. Please execute the script, located in [**scripts/rebuild.py**](../scripts/rebuild.py). 
-
-How to execute the help script from the root of this repository:
-
-```sh
-python3 scripts/rebuild.py -h
-```
-
-Example for rebuilding the **client** and **vre_lite** services from the **my_stack** stack: 
-
-```sh
-python3 scripts/rebuild.py -s client vre_lite -t my_stack
-```
-
-Note that this script will **rebuild the service** to the **latest** available **version**.
-
-For performing the same process step by step:
-
-1. **Rebuild the Service Image Without Cache:** Use docker-compose to rebuild the image locally, targeting only the service you want to update:
-
-    ```sh
-    docker-compose build --no-cache <service_name>
-    ```
-
-2. **Update the Service in the Swarm:** In Docker Swarm, you can force the service to use the updated image by running:
-
-    ```sh
-    docker service update --force <stack_name>_<service_name>
-    ```
-
-3. **Remove Stopped Container(s):** After updating the service, the old container remains stopped, execute the following instruction for removing it:
-
-    ```sh
-    docker container prune -f
-    ````
-
-4. **Remove Unused Image(s):** After rebuilding the image, the old image remains unused, execute the following instruction for removing it:
-
-    ```sh
-    docker image prune -f
-    ```
-
-A **rollback script** is provided for rebuilding an old version of **one service** in an **automatic** way. Please execute the script, located in [**scripts/rebuild-legacy.py**](../scripts/rebuild-legacy.py). 
-
-How to execute the help script from the root of this repository:
-
-```sh
-python3 scripts/rebuild-legacy.py -h
-```
-
-Example for rollback to the **version 0.0.1** of the **client** service from the **my_stack** stack: 
-
-```sh
-python3 scripts/rebuild-legacy.py -s client vre_lite -v 0.0.1 -t my_stack
-```
-
 ## Clean docker
 
 When working with Docker, **even after removing images and containers**, Docker can leave behind various unused resources that take up **disk space**. To clean up your system effectively, you can use the following commands:

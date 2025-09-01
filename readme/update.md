@@ -4,7 +4,7 @@ This section explains in detail how to **update** one or more **services** of th
 
 ## Check & update
 
-An **update script** is provided for checking the **versions** of all the running services and see if there are **updates** available. This same script allows to **update** one or all the updatable services.
+An **update script** is provided for checking the **versions** of all the running services and see if there are **updates** available. This same script, located in [**scripts/update.py**](../scripts/update.py), allows to **update** one or all the updatable services.
 
 How to execute the script from the root of this repository:
 
@@ -148,9 +148,9 @@ Example for rollback to the **version 0.0.1** of the **client** service from the
 python3 scripts/rebuild-legacy.py -s client vre_lite -v 0.0.1 -t my_stack
 ```
 
-## Update services versions
+## Update services versions
 
-The versions for **each service** of the stack are stored into a database. The **status** of these services is shown in the **VRE lite service**. Though this script is **integrated** into the automatic **deploy** script, it can be used **separately** for updating all the versions in a single call:
+The versions for **each service** of the stack are stored into a database. The **status** of these services is shown in the **VRE lite service**. Though this script is **integrated** into the automatic **deploy** script, located in [**scripts/update-services-versions.py**](../scripts/update-services-versions.py), it can be used **separately** for updating all the versions in a single call:
 
 ```sh
 python3 scripts/update-services-versions.py 
