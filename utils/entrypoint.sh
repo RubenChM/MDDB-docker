@@ -37,7 +37,7 @@ case "$1" in
         ;;
     "run")
         if [ $# -lt 2 ]; then
-            echo "❌ Usage: docker run mddb-scripts run <script.py> [arguments]"
+            echo "❌ Usage: docker run  utils_image run <script.py> [arguments]"
             list_scripts
             exit 1
         fi
@@ -50,13 +50,13 @@ case "$1" in
         echo "🔧 MDDB Python Scripts Container (One-off execution)"
         echo ""
         echo "Usage:"
-        echo "  docker run --rm mddb-scripts list"
-        echo "  docker run --rm mddb-scripts run <script.py> [args]"
-        echo "  docker run --rm -it mddb-scripts shell"
+        echo "  docker run --rm utils_image list"
+        echo "  docker run --rm utils_image run <script.py> [args]"
+        echo "  docker run --rm -it utils_image shell"
         echo ""
         echo "Examples:"
-        echo "  docker run --rm mddb-scripts run update.py"
-        echo "  docker run --rm mddb-scripts run rebuild.py -s client -t mystack"
+        echo "  docker run --rm utils_image run update.py"
+        echo "  docker run --rm utils_image run rebuild.py -s client -t mystack"
         echo ""
         list_scripts
         ;;

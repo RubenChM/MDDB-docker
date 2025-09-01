@@ -73,6 +73,10 @@ For this project, the chosen version of **mongo** is **6**.
 
 There is an specific service that performs a complete database backup every so often depending on a variable defined by the user. To disable this service, define **DB_BACKUP_REPLICAS** to 0.
 
+### Utils
+
+This service acts as a hodgepodge of utilities.
+
 ### Object Storage
 
 In order to provide the users a way to **transfer big files** that can't be uploaded via web, a docker **MinIO** server is integrated into the infrastructure.
@@ -187,6 +191,7 @@ When executing the **deploy script**, the user will be prompted to answer some q
   * [**data/**](readme/storage.md#workflow) (**workflow** output data and **loader** input data)
   * [**docker/**](readme/storage.md#docker) (**docker images**, generated in the [**step before**](#install-docker-and-docker-compose))
   * [**db/**](readme/storage.md#mongodb) (**MongoDB** data)
+  * [**db_backup/**](readme/storage.md#mongodb-backup) (**MongoDB** data backup)
   * [**logs/**](readme/storage.md#logs) (**VRE lite** logs)
   * [**minio/**](readme/storage.md#minio) (**MinIO** data)
     * disk1/ (**MinIO** data distributed in multi-drive configuration)
@@ -246,6 +251,12 @@ First off, all the **environment files** must be created and updated as well as 
 Once the Virtual Machine has all the **dependencies installed** and all the **config** files are **set up**, it's the moment of executing the **Docker Swarm** service. **Docker Swarm** is a **container orchestration** tool for **clustering** and **scheduling** Docker containers. 
 
 [**Click here for seeing the detailed instructions for executing Docker Swarm**](readme/docker-swarm.md)
+
+### Update services
+
+Several **scripts** are provided in order to **update services** in an easy way.
+
+[**Click here for seeing how to Update services**](readme/update.md)
 
 ### Tips
 

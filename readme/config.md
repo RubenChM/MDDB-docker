@@ -14,6 +14,8 @@ An `.env` file must be created in the **root** of the project. The file [**.env.
 | ---------------- | ------- | ----------------------------------------------- |
 | DOCKER_DEFAULT_PLATFORM         | string  | default platform (architecture and operating system), ie linux/amd64                               |
 | NODE         | string  | node identifier to deploy                                     |
+| SLACK_WEBHOOK_URL         | string  | slack webhook used for sending update messages                                     |
+| GH_PAT         | string  | GitHub personal access token used by VRE lite                                     |
 | &nbsp;
 | APACHE_HTTP_OUTER_PORT         | number  | apache outer port for http protocol                                        |
 | APACHE_HTTPS_OUTER_PORT         | number  | apache outer port for https protocol                                        |
@@ -27,6 +29,8 @@ An `.env` file must be created in the **root** of the project. The file [**.env.
 | APACHE_MEMORY_LIMIT         | string  | apache limit memory                                        |
 | APACHE_CPU_RESERVATION         | string  | apache reserved number of CPUs                                        |
 | APACHE_MEMORY_RESERVATION         | string  | apache reserved memory                                        |
+| SSL_CERTIFICATE         | string  | SSL public certificate file name                                       |
+| SSL_CERTIFICATE_KEY         | string  | SSL private certificate file name memory                                        |
 | &nbsp;
 | LOADER_VOLUME_PATH         | string  | path where the loader will look for files                                        |
 | LOADER_REPLICAS      | number  | number of replicas to deploy                                    |
@@ -71,7 +75,7 @@ An `.env` file must be created in the **root** of the project. The file [**.env.
 | DB_CPU_RESERVATION          | string  | DB reserved number of CPUs                           |
 | DB_MEMORY_RESERVATION      | string  | DB reserved memory                         |
 | DB_SERVER      | `<url>`  | url of the db server                          |
-| DB_NAME      | string  | name of the  DB collection                          |
+| DB_NAME      | string  | name of the DB collection                          |
 | DB_AUTHSOURCE      | string  | the DB collection the user will attempt to authenticate to                           |
 | &nbsp;
 | DB_BACKUP_VOLUME_PATH         | string  | path where the DB backups will be stored                                        |
@@ -113,6 +117,17 @@ An `.env` file must be created in the **root** of the project. The file [**.env.
 | VRE_LITE_LOG_PATH          | string  | path where the logs will be saved (relative to the docker)                           |
 | VRE_LITE_MAX_FILE_SIZE      | number  | maximum size for all the trajectory files in bytes                      |
 | VRE_LITE_TIME_DIFF      | number  | number of days to be subtracted from now to run the cleaning jobs for the VRE lite          |
+| VRE_LITE_DB_SERVER      | `<url>`  | url of the db server for the VRE lite          |
+| VRE_LITE_DB_OUTER_PORT      | number  | DB outer port for the VRE lite          |
+| VRE_LITE_MONGO_DATABASE      | string  | name of the DB collection for the VRE lite          |
+| VRE_LITE_DB_LOGIN      | string  | db user for VRE lite data           |
+| VRE_LITE_DB_PASSWORD      | string  | db password for VRE lite data           |
+| &nbsp;
+| UTILS_REPLICAS      | number  | number of replicas to deploy           |
+| UTILS_CPU_LIMIT      | string  | utils limit number of CPUs           |
+| UTILS_MEMORY_LIMIT      | string  | utils limit memory           |
+| UTILS_CPU_RESERVATION      | string  | utils reserved number of CPUs           |
+| UTILS_MEMORY_RESERVATION      | string  | utils reserved memory           |
 | &nbsp;
 | MONGO_INITDB_ROOT_USERNAME      | string  | root user for the DB                         |
 | MONGO_INITDB_ROOT_PASSWORD      | string  | root password for the DB                       |
@@ -132,7 +147,7 @@ VRE_LITE_CPU_LIMIT='4.00'  # cpus in float format
 VRE_LITE_MEMORY_LIMIT='2G'  # memory indicating unit (G, M)
 ```
 
-Tthe **DB_SERVER** must be **<stack_name>_<service_name>** where **stack_name** is the one used when [**deploying the stack**](docker-swarm.md#build-services) and **service_name** is the mongodb name of the service as defined in [**docker-compose.yml**](../docker-compose.yml) file.
+The **DB_SERVER** must be **<stack_name>_<service_name>** where **stack_name** is the one used when [**deploying the stack**](docker-swarm.md#build-services) and **service_name** is the mongodb name of the service as defined in [**docker-compose.yml**](../docker-compose.yml) file.
 
 The **DB_NAME** and **DB_AUTHSOURCE** must be the same used in the [**mongo-init.js**](../mongodb/mongo-init.js) file.
 
@@ -339,6 +354,9 @@ services:
       MONGO_INITDB_DATABASE: ${DB_NAME}
       LOADER_DB_LOGIN: ${LOADER_DB_LOGIN}
       LOADER_DB_PASSWORD: ${LOADER_DB_PASSWORD}
+      MONGO_VRE_DATABASE: ${VRE_LITE_MONGO_DATABASE}
+      VRE_DB_LOGIN: ${VRE_LITE_DB_LOGIN}
+      VRE_DB_PASSWORD: ${VRE_LITE_DB_PASSWORD}
       REST_DB_LOGIN: ${REST_DB_LOGIN}
       REST_DB_PASSWORD: ${REST_DB_PASSWORD}
     ports:
@@ -377,7 +395,7 @@ services:
       RETENTION_COUNT: ${DB_BACKUP_RETENTION_COUNT}
       BACKUP_INTERVAL: ${DB_BACKUP_INTERVAL}
     networks:
-      - dbnet
+      - data_network
     depends_on:
       - mongodb
     deploy:
@@ -441,7 +459,6 @@ services:
     build:
       context: ./vre_lite
       args:
-        VERSION: ${VRE_LITE_VERSION}
         MINIO_API_PORT: ${MINIO_API_INNER_PORT}
         VRE_LITE_INNER_PORT: ${VRE_LITE_INNER_PORT}
         VRE_LITE_BASE_URL_DEVELOPMENT: ${VRE_LITE_BASE_URL_DEVELOPMENT}
@@ -455,14 +472,22 @@ services:
         MINIO_PORT: ${APACHE_MINIO_OUTER_PORT}
         MINIO_USER: ${MINIO_USER}
         MINIO_PASSWORD: ${MINIO_PASSWORD}
+        DB_USER: ${VRE_LITE_DB_LOGIN}
+        DB_PASS: ${VRE_LITE_DB_PASSWORD}
+        DB_SERVER: ${VRE_LITE_DB_SERVER}
+        DB_PORT: ${VRE_LITE_DB_OUTER_PORT}
+        DB_NAME: ${VRE_LITE_MONGO_DATABASE}
+        PAT: ${GH_PAT}
         NODE_NAME: ${NODE}
     volumes:
       - vre_lite_log_volume:/vre_lite
+      - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - "${VRE_LITE_OUTER_PORT}:${VRE_LITE_INNER_PORT}"
     networks:
       - minio_network
       - web_network
+      - data_network
     depends_on:
       - minio
     deploy:
@@ -478,6 +503,29 @@ services:
         condition: any   # Restart always
       update_config:
         order: start-first  # Priority over other services
+
+  utils:
+    image: utils_image   # name of utils image
+    build:
+      context: ./utils   # folder to search Dockerfile for this image
+    environment:
+      DB_SERVER: ${VRE_LITE_DB_SERVER}
+      DB_PORT: ${VRE_LITE_DB_OUTER_PORT}
+      DB_VRE_NAME: ${VRE_LITE_MONGO_DATABASE}
+      DB_VRE_AUTH_USER: ${VRE_LITE_DB_LOGIN}
+      DB_VRE_AUTH_PASSWORD: ${VRE_LITE_DB_PASSWORD}
+      DB_VRE_AUTHSOURCE: ${VRE_LITE_MONGO_DATABASE}
+    networks:
+      - data_network
+    deploy:
+      replicas: ${UTILS_REPLICAS}  # Ensure this service is not deployed by default as it is a one-time task
+      resources:
+        limits:
+          cpus: ${UTILS_CPU_LIMIT}   # Specify the limit number of CPUs
+          memory: ${UTILS_MEMORY_LIMIT}   # Specify the limit memory
+        reservations:
+          cpus: ${UTILS_CPU_RESERVATION}   # Specify the reserved number of CPUs
+          memory: ${UTILS_MEMORY_RESERVATION}   # Specify the reserved memory
 
 volumes:
   db_volume:

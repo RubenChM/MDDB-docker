@@ -240,6 +240,64 @@ If services are already online, go to:
 
     http(s)://your_server_ip/vre_lite/
 
+### Use utils
+
+While the **mongodb**, **client** and **rest** containers will remain up, the **utils** must be called every time is needed. As it is a **one-off task**, **Docker Compose** is used for running it.
+
+**Show help** for utils:
+
+```sh
+docker-compose run --rm utils help
+```
+
+Or, if the above doesn't work:
+
+```sh
+docker run --rm utils_image help
+```
+
+**List** all available utils scripts:
+
+```sh
+docker-compose run --rm utils list
+```
+
+Or, if the above doesn't work:
+
+```sh
+docker run --rm utils_image list
+```
+
+**Run** scripts:
+
+```sh
+docker-compose run --rm run <script.py> [args]
+```
+
+For example, for updating the version of the client to 1.2.0 in the VRE lite DB:
+
+```sh
+docker-compose run --rm utils run version_tracker.py client v1.2.0
+```
+
+Or, if the above doesn't work:
+
+```sh
+docker run --rm utils_image run <script.py> [args]
+```
+
+**Execute** container in shell:
+
+```sh
+docker-compose run --rm utils shell
+```
+
+Or, if the above doesn't work:
+
+```sh
+docker run --rm utils_image shell
+```
+
 ## Stop services
 
 Remove stack:
