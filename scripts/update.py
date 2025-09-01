@@ -68,8 +68,16 @@ class VersionChecker:
         """Get the latest version from GitHub repo tags."""
         print(f"  📡 Fetching latest version for {org}/{repo}...")
 
-        # Use the exact command from the prompt
-        command = f'curl -s "https://api.github.com/repos/{org}/{repo}/tags" | grep -m 1 \'"name":\' | sed -E \'s/.*"name": "([^"]+)".*/\\1/\''
+        # Get GitHub token from environment if available
+        env_vars = self.read_env_file('.env')
+        github_token = env_vars.get('GH_PAT')
+
+        if github_token:
+            # Use authorization header with token
+            command = f'curl -s -H "Authorization: Bearer {github_token}" "https://api.github.com/repos/{org}/{repo}/tags" | grep -m 1 \'"name":\' | sed -E \'s/.*"name": "([^"]+)".*/\\1/\''
+        else:
+            # Use without authorization (rate limited)
+            command = f'curl -s "https://api.github.com/repos/{org}/{repo}/tags" | grep -m 1 \'"name":\' | sed -E \'s/.*"name": "([^"]+)".*/\\1/\''
 
         success, output = self.run_command(command, shell=True, stream_output=False)
 
