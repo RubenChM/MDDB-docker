@@ -75,6 +75,7 @@ class VersionChecker:
         if github_token:
             # Use authorization header with token
             command = f'curl -s -H "Authorization: Bearer {github_token}" "https://api.github.com/repos/{org}/{repo}/tags" | grep -m 1 \'"name":\' | sed -E \'s/.*"name": "([^"]+)".*/\\1/\''
+            print("    Using GitHub token for authenticated requests.")
         else:
             # Use without authorization (rate limited)
             command = f'curl -s "https://api.github.com/repos/{org}/{repo}/tags" | grep -m 1 \'"name":\' | sed -E \'s/.*"name": "([^"]+)".*/\\1/\''
