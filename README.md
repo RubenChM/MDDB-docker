@@ -29,6 +29,14 @@ For this project, the following repo has been used:
 
 https://github.com/mmb-irb/MDDB-REST-API/
 
+### Optimade
+
+The **Open Databases Integration for Materials Design** (OPTIMADE) consortium aims to make materials databases interoperable by developing a specification for a common REST API. This **service** is considered an **extension** and it can be installed on demand.
+
+For this project, the following repo has been used:
+
+https://github.com/JPBergsma/optimade-python-tools.git
+
 ### Website client
 
 The **website client** is a **React App**.

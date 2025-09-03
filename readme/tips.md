@@ -4,30 +4,30 @@ In this section there are some interesting **tips** that can be useful for **deb
 
 ## Avoid cache for docker-compose
 
-> NOTE: **From July 2024 onwards**, the instruction for Docker Compose in **mac** is without hyphen, so from now on, `docker-compose up -d` is `docker compose up -d` when executing in **macOS**.
+> NOTE: In **docker old versions** the instruction for Docker Compose is with hyphen, so instead of `docker compose build`, `docker-compose build` must be typed and executed.
 
 Ie when developing and doing changes in git repo.
 
 1. Stop all containers and remove all images: 
 
     ```sh
-    docker-compose down --rmi all
+    docker compose down --rmi all
     ```
 
 2. Rebuild images avoiding cache:
 
     ```sh
-    docker-compose build --no-cache
+    docker compose build --no-cache
 
 3. Rebuild a single service avoiding cache but preserving the rest of services (only service_name has changed):
 
     ```sh
-    docker-compose build --no-cache <service_name>
+    docker compose build --no-cache <service_name>
     ```
 
 4. Up services:
     ```sh
-    docker-compose up -d
+    docker compose up -d
     ```
 
 ## Clean docker

@@ -18,7 +18,7 @@ docker swarm init
 docker swarm init --advertise-addr <IP_ADDRESS>
 ```
 
-In order to execute the **long-term** tasks in **Docker Swarm** and the **one-off tasks**, such as the **loader** or the **workflow**, in **Docker Compose**, some of the **networks** are declared as **external** in the **docker-compose.yml** file, so they must be created before the `docker-compose build` and the `docker stak deploy`:
+In order to execute the **long-term** tasks in **Docker Swarm** and the **one-off tasks**, such as the **loader** or the **workflow**, in **Docker Compose**, some of the **networks** are declared as **external** in the **docker-compose.yml** file, so they must be created before the `docker compose build` and the `docker stak deploy`:
 
 ```sh
 docker network create --driver overlay --attachable web_network
@@ -26,12 +26,18 @@ docker network create --driver overlay --attachable data_network
 docker network create --driver overlay --attachable minio_network
 ```
 
-> NOTE: **From July 2024 onwards**, the instruction for Docker Compose in **mac** is without hyphen, so from now on, `docker-compose build` is `docker compose build` when executing in **macOS**.
+> NOTE: In **docker old versions** the instruction for Docker Compose is with hyphen, so instead of `docker compose build`, `docker-compose build` must be typed and executed.
 
 For building the services via **Docker Compose**, please execute the following instruction:
 
 ```sh
-docker-compose build
+docker compose build
+```
+
+**Note:** for building **extension** services as well, please execute the following instruction:
+
+```sh
+docker compose -f docker-compose.yml -f extensions.yml build
 ```
 
 Export environment variables defined in [**global .env file**](config.md#env-file) and deploy docker stack:
@@ -39,6 +45,13 @@ Export environment variables defined in [**global .env file**](config.md#env-fil
 ```sh
 export $(grep -v '^#' .env | xargs)
 docker stack deploy -c docker-compose.yml my_stack
+```
+
+**Note:** for deploying **extension** services as well, please execute the following instructions:
+
+```sh
+export $(grep -v '^#' .env | xargs)
+docker stack deploy -c docker-compose.yml -c extensions.yml my_stack 
 ```
 
 Check services:
@@ -73,7 +86,7 @@ While the **mongodb**, **client** and **rest** containers will remain up, the **
 Workflow **help**:
 
 ```sh
-docker-compose run --rm workflow mwf -h
+docker compose run --rm workflow mwf -h
 ```
 
 Or, if the above doesn't work:
@@ -89,7 +102,7 @@ Please read carefully the [**workflow help**](../workflow) as it has an extensiv
 Example of **running** the workflow downloading an already **loaded trajectory** and saving the results into an **OUTPUT_FOLDER** that must be already created inside **WORKFLOW_VOLUME_PATH** defined in [**global .env**](config.md#env-file).
 
 ```sh
-docker-compose run --rm workflow mwf run -proj <ACCESSION ID> -smp -e clusters energies pockets -dir /data/<OUTPUT_FOLDER>
+docker compose run --rm workflow mwf run -proj <ACCESSION ID> -smp -e clusters energies pockets -dir /data/<OUTPUT_FOLDER>
 ```
 
 Or, if the above doesn't work:
@@ -105,7 +118,7 @@ Note that this run excludes clusters, energies and pockets analyses. Adding the 
 Example of **running** the workflow from data **uploaded via VRE lite**:
 
 ```sh
-docker-compose run --rm -e BUCKET=<BUCKET> workflow mwf run -dir /data/<OUTPUT_FOLDER> -md /data/<OUTPUT_FOLDER>/<REPLICA_FOLDER> /mnt/<FOLDER>/<TOPOLOGY> /mnt/<FOLDER>/<TRAJECTORY> -top /mnt/<FOLDER>/<TOPOLOGY> -inp /mnt/<FOLDER>/inputs.yaml -filt -ns
+docker compose run --rm -e BUCKET=<BUCKET> workflow mwf run -dir /data/<OUTPUT_FOLDER> -md /data/<OUTPUT_FOLDER>/<REPLICA_FOLDER> /mnt/<FOLDER>/<TOPOLOGY> /mnt/<FOLDER>/<TRAJECTORY> -top /mnt/<FOLDER>/<TOPOLOGY> -inp /mnt/<FOLDER>/inputs.yaml -filt -ns
 ```
 
 Or, if the above doesn't work:
@@ -129,7 +142,7 @@ While the **mongodb**, **client** and **rest** containers will remain up, the **
 **List** database documents:
 
 ```sh
-docker-compose run --rm loader list
+docker compose run --rm loader list
 ```
 
 Or, if the above doesn't work:
@@ -141,7 +154,7 @@ docker run --rm --network data_network --cpus "${LOADER_CPU_LIMIT}" --memory "${
 **Load** documents to database:
 
 ```sh
-docker-compose run --rm loader load /data/<OUTPUT_FOLDER>
+docker compose run --rm loader load /data/<OUTPUT_FOLDER>
 ```
 
 Or, if the above doesn't work:
@@ -155,7 +168,7 @@ Take into account that **OUTPUT_FOLDER** must be inside **WORKFLOW_VOLUME_PATH**
 **Remove** database document:
 
 ```sh
-docker-compose run --rm loader delete <project_id>
+docker compose run --rm loader delete <project_id>
 ```
 
 Or, if the above doesn't work:
@@ -247,7 +260,7 @@ While the **mongodb**, **client** and **rest** containers will remain up, the **
 **Show help** for utils:
 
 ```sh
-docker-compose run --rm utils help
+docker compose run --rm utils help
 ```
 
 Or, if the above doesn't work:
@@ -259,7 +272,7 @@ docker run --rm utils_image help
 **List** all available utils scripts:
 
 ```sh
-docker-compose run --rm utils list
+docker compose run --rm utils list
 ```
 
 Or, if the above doesn't work:
@@ -271,13 +284,13 @@ docker run --rm utils_image list
 **Run** scripts:
 
 ```sh
-docker-compose run --rm run <script.py> [args]
+docker compose run --rm run <script.py> [args]
 ```
 
 For example, for updating the version of the client to 1.2.0 in the VRE lite DB:
 
 ```sh
-docker-compose run --rm utils run version_tracker.py client v1.2.0
+docker compose run --rm utils run version_tracker.py client v1.2.0
 ```
 
 Or, if the above doesn't work:
@@ -289,7 +302,7 @@ docker run --rm utils_image run <script.py> [args]
 **Execute** container in shell:
 
 ```sh
-docker-compose run --rm utils shell
+docker compose run --rm utils shell
 ```
 
 Or, if the above doesn't work:

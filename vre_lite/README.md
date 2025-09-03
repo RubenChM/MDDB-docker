@@ -17,9 +17,29 @@ FROM node:18.19.0 AS build
 # Set working directory
 WORKDIR /app
 
-# Clone mddb-vre repo
+# Version argument
 ARG VERSION
-RUN git clone --branch ${VERSION} --depth 1 https://github.com/mmb-irb/MDDB-VRE.git
+
+# If version is set, wget the specific version of the vre_lite
+# Otherwise, use the latest version
+RUN if [ -z "$VERSION" ]; then \
+        echo "No VERSION provided, fetching latest tag..." && \
+        LATEST_TAG=$(curl -s "https://api.github.com/repos/mmb-irb/mddb-vre/tags" \
+            | grep -m 1 '"name":' \
+            | sed -E 's/.*"name": "v?([^"]+)".*/\1/') && \
+        if [ -z "$LATEST_TAG" ]; then \
+            echo "Failed to fetch latest tag, using main branch" && \
+            git clone --branch main --depth 1 https://github.com/mmb-irb/mddb-vre.git && \
+            echo "main" > version.txt; \
+        else \
+            echo "Using latest tag: $LATEST_TAG" && \
+            echo "$LATEST_TAG" > version.txt && \
+            git clone --branch "v$LATEST_TAG" --depth 1 https://github.com/mmb-irb/mddb-vre.git; \
+        fi; \
+    else \
+        git clone --branch "v${VERSION}" --depth 1 https://github.com/mmb-irb/mddb-vre.git; \
+        echo "$VERSION" > version.txt; \
+    fi
 
 # Define the build arguments
 ARG VRE_LITE_BASE_URL_DEVELOPMENT
@@ -32,6 +52,12 @@ ARG MINIO_PROTOCOL
 ARG MINIO_URL
 ARG MINIO_PORT
 ARG MINIO_USER
+ARG DB_USER
+ARG DB_PASS
+ARG DB_SERVER
+ARG DB_PORT
+ARG DB_NAME
+ARG PAT
 ARG NODE_NAME
 
 RUN echo "BASE_URL_DEVELOPMENT=${VRE_LITE_BASE_URL_DEVELOPMENT}" > /app/mddb-vre/.env && \
@@ -44,6 +70,12 @@ RUN echo "BASE_URL_DEVELOPMENT=${VRE_LITE_BASE_URL_DEVELOPMENT}" > /app/mddb-vre
     echo "MINIO_URL=${MINIO_URL}" >> /app/mddb-vre/.env && \
     echo "MINIO_PORT=${MINIO_PORT}" >> /app/mddb-vre/.env && \
     echo "MINIO_USER=${MINIO_USER}" >> /app/mddb-vre/.env && \
+    echo "DB_USER=${DB_USER}" >> /app/mddb-vre/.env && \
+    echo "DB_PASS=${DB_PASS}" >> /app/mddb-vre/.env && \
+    echo "DB_SERVER=${DB_SERVER}" >> /app/mddb-vre/.env && \
+    echo "DB_PORT=${DB_PORT}" >> /app/mddb-vre/.env && \
+    echo "DB_NAME=${DB_NAME}" >> /app/mddb-vre/.env && \
+    echo "PAT=${PAT}" >> /app/mddb-vre/.env && \
     echo "NODE_NAME=${NODE_NAME}" >> /app/mddb-vre/.env
 
 # Change working directory to /app/mddb-vre
@@ -61,6 +93,9 @@ FROM docker.io/library/nginx:alpine
 # Install necessary packages
 RUN apk --no-cache add nodejs npm curl
 
+# Install Docker CLI to allow interaction with Docker from within the container
+RUN apk add --no-cache docker-cli
+
 # Install pm2
 RUN npm install pm2 -g
 
@@ -69,6 +104,8 @@ WORKDIR /app
 
 # Copy the built Nuxt app from the previous stage
 COPY --from=build /app/mddb-vre/.output /app/.output
+# Copy the version file
+COPY --from=build /app/version.txt /app/version.txt
 
 # Copy the pm2 configuration file
 COPY ecosystem.config.cjs .
@@ -104,4 +141,5 @@ EXPOSE ${VRE_LITE_INNER_PORT}
 
 # Serve the app
 ENTRYPOINT ["/app/entrypoint.sh"]
+
 ```

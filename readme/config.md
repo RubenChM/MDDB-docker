@@ -3,6 +3,7 @@
 * [.env file](#env-file)
 * [MongoDB](#mongodb)
 * [Docker Compose](#docker-compose)
+* [Extensions](#extensions)
 
 ## .env file
 
@@ -66,6 +67,14 @@ An `.env` file must be created in the **root** of the project. The file [**.env.
 | REST_DB_LOGIN    | string  | db user for website REST API                               |
 | REST_DB_PASSWORD    | string  | db password for website REST API                               |
 | &nbsp;
+| &nbsp;
+| OPTIMADE_REPLICAS      | number  | number of replicas to deploy                                    |
+| OPTIMADE_OUTER_PORT         | number  | OPTIMADE outer port                                         |
+| OPTIMADE_INNER_PORT         | number  | OPTIMADE inner port                                         |
+| OPTIMADE_CPU_LIMIT    | string  | OPTIMADE limit number of CPUs                               |
+| OPTIMADE_MEMORY_LIMIT    | string  | OPTIMADE limit memory                             |
+| OPTIMADE_CPU_RESERVATION    | string  | OPTIMADE reserved number of CPUs                               |
+| OPTIMADE_MEMORY_RESERVATION    | string  | OPTIMADE reserved memory                               |
 | DB_VOLUME_PATH         | string  | path where the DB will deploy the mongoDB file system                                        |
 | DB_REPLICAS      | number  | number of replicas to deploy                                    |
 | DB_OUTER_PORT         | number  | DB outer port                                         |
@@ -190,7 +199,7 @@ Please modify the values of **user** and **pwd** for both users and be sure that
 
 ## Docker Compose
 
-The [**docker-compose.yml**](./docker-compose.yml) is the file that specifies what **images** are required, what **ports** they need to expose, whether they have access to the host **filesystem**, what **commands** should be run when they start up, and so on.
+The [**docker-compose.yml**](../docker-compose.yml) is the file that specifies what **images** are required, what **ports** they need to expose, whether they have access to the host **filesystem**, what **commands** should be run when they start up, and so on.
 
 All the configurable variables such as **resources**, **paths**, **ports** and so on must be defined in the [**global .env file**](#env-file).
 
@@ -209,6 +218,7 @@ services:
         APACHE_MINIO_INNER_PORT: ${APACHE_MINIO_INNER_PORT}
         CLIENT_INNER_PORT: ${CLIENT_INNER_PORT}
         REST_INNER_PORT: ${REST_INNER_PORT}
+        OPTIMADE_INNER_PORT: ${OPTIMADE_INNER_PORT}
         VRE_LITE_INNER_PORT: ${VRE_LITE_INNER_PORT}
         MINIO_UI_INNER_PORT: ${MINIO_UI_INNER_PORT}
         MINIO_API_INNER_PORT: ${MINIO_API_INNER_PORT}
@@ -590,4 +600,48 @@ networks:
     external: true   # Use an external network
   web_network:
     external: true   # Use an external network
+```
+
+## Extensions
+
+The [**extensions.yml**](../extensions.yml) file specifies **complementary** services, which may be **deployed** with the main [**docker-compose.yml**](#docker-compose) file or **omitted**, depending on the node’s requirements.
+
+All the configurable variables such as **resources**, **paths**, **ports** and so on must be defined in the [**global .env file**](#env-file).
+
+```yaml
+services:
+  optimade:
+    image: optimade_image
+    build:
+      context: ./optimade   # folder to search Dockerfile for this image
+      args:
+        DB_SERVER: ${DB_SERVER}
+        DB_PORT: ${DB_OUTER_PORT}
+        DB_NAME: ${DB_NAME}
+        DB_AUTH_USER: ${REST_DB_LOGIN}
+        DB_AUTH_PASSWORD: ${REST_DB_PASSWORD}
+        DB_AUTHSOURCE: ${DB_AUTHSOURCE}
+        PROTOCOL: ${MINIO_PROTOCOL}
+        URL: ${MINIO_URL}
+        OPTIMADE_INNER_PORT: ${OPTIMADE_INNER_PORT}
+    depends_on:
+      - mongodb
+    ports:
+      - "${OPTIMADE_OUTER_PORT}:${OPTIMADE_INNER_PORT}"   # port mapping
+    networks:
+      - data_network
+      - web_network
+    deploy:
+      replicas: ${OPTIMADE_REPLICAS}   # Specify the number of replicas for Docker Swarm
+      resources:
+        limits:
+          cpus: ${OPTIMADE_CPU_LIMIT}   # Specify the limit number of CPUs
+          memory: ${OPTIMADE_MEMORY_LIMIT}   # Specify the limit memory
+        reservations:
+          cpus: ${OPTIMADE_CPU_RESERVATION}   # Specify the reserved number of CPUs
+          memory: ${OPTIMADE_MEMORY_RESERVATION}   # Specify the reserved memory
+      restart_policy:
+        condition: any   # Restart always
+      update_config:
+        order: start-first  # Priority over other services
 ```

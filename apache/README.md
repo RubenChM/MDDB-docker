@@ -9,7 +9,7 @@ https://hub.docker.com/_/httpd
 Be aware of having the **public** and **private** ssl files in the **same folder** where the Dockerfile is:
 
 ```Dockerfile
-# Base docker with apache
+# Base docker with apache 2.4
 FROM docker.io/library/httpd:2.4
 
 # Copy the custom Apache configuration file
@@ -24,6 +24,7 @@ ARG APACHE_HTTPS_OUTER_PORT
 ARG APACHE_MINIO_OUTER_PORT
 ARG CLIENT_INNER_PORT
 ARG REST_INNER_PORT
+ARG OPTIMADE_INNER_PORT
 ARG VRE_LITE_INNER_PORT
 ARG MINIO_UI_INNER_PORT
 ARG MINIO_API_INNER_PORT
@@ -37,6 +38,7 @@ RUN sed -i "s/APACHE_HTTPS_OUTER_PORT/${APACHE_HTTPS_OUTER_PORT}/g" /usr/local/a
 RUN sed -i "s/APACHE_MINIO_OUTER_PORT/${APACHE_MINIO_OUTER_PORT}/g" /usr/local/apache2/conf/conf.d/custom.conf
 RUN sed -i "s/CLIENT_INNER_PORT/${CLIENT_INNER_PORT}/g" /usr/local/apache2/conf/conf.d/custom.conf
 RUN sed -i "s/REST_INNER_PORT/${REST_INNER_PORT}/g" /usr/local/apache2/conf/conf.d/custom.conf
+RUN sed -i "s/OPTIMADE_INNER_PORT/${OPTIMADE_INNER_PORT}/g" /usr/local/apache2/conf/conf.d/custom.conf
 RUN sed -i "s/VRE_LITE_INNER_PORT/${VRE_LITE_INNER_PORT}/g" /usr/local/apache2/conf/conf.d/custom.conf
 RUN sed -i "s/MINIO_UI_INNER_PORT/${MINIO_UI_INNER_PORT}/g" /usr/local/apache2/conf/conf.d/custom.conf
 RUN sed -i "s/MINIO_API_INNER_PORT/${MINIO_API_INNER_PORT}/g" /usr/local/apache2/conf/conf.d/custom.conf

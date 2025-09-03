@@ -15,7 +15,7 @@ This Dockerfile is used taking as a starting point the **repository** of the RES
 FROM docker.io/library/nginx:alpine AS build
 
 # Install necessary packages
-RUN apk --no-cache add nodejs npm git
+RUN apk --no-cache add nodejs npm git curl
 RUN apk add build-base
 RUN apk add cmake
 
@@ -28,8 +28,29 @@ RUN git clone https://github.com/d-beltran/chemfiles --depth 1 && cd chemfiles &
 # Verify installation
 RUN node --version && npm --version && git --version
 
-# Clone MDDB-REST-API repo
-RUN git clone https://github.com/mmb-irb/MDDB-REST-API.git
+# Version argument
+ARG VERSION
+
+# If version is set, wget the specific version of the rest API
+# Otherwise, use the latest version
+RUN if [ -z "$VERSION" ]; then \
+        echo "No VERSION provided, fetching latest tag..." && \
+        LATEST_TAG=$(curl -s "https://api.github.com/repos/mmb-irb/MDDB-REST-API/tags" \
+            | grep -m 1 '"name":' \
+            | sed -E 's/.*"name": "v?([^"]+)".*/\1/') && \
+        if [ -z "$LATEST_TAG" ]; then \
+            echo "Failed to fetch latest tag, using master branch" && \
+            git clone --branch master --depth 1 https://github.com/mmb-irb/MDDB-REST-API.git && \
+            echo "master" > version.txt; \
+        else \
+            echo "Using latest tag: $LATEST_TAG" && \
+            echo "$LATEST_TAG" > version.txt && \
+            git clone --branch "v$LATEST_TAG" --depth 1 https://github.com/mmb-irb/MDDB-REST-API.git; \
+        fi; \
+    else \
+        git clone --branch "v${VERSION}" --depth 1 https://github.com/mmb-irb/MDDB-REST-API.git; \
+        echo "$VERSION" > version.txt; \
+    fi
 
 # Define environment variables
 ARG DB_SERVER
@@ -73,6 +94,7 @@ WORKDIR /app
 # Copy from the previous stage
 COPY --from=build /app/MDDB-REST-API /app/MDDB-REST-API
 COPY --from=build /app/chemfiles /app/chemfiles
+COPY --from=build /app/version.txt /app/version.txt
 
 # Change working directory to /app/MDDB-REST-API
 WORKDIR /app/MDDB-REST-API
