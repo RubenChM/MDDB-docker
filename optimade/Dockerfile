@@ -29,17 +29,17 @@ RUN git clone https://github.com/JPBergsma/optimade-python-tools.git && \
 WORKDIR /app/optimade-python-tools
 
 # Copy the current directory contents into the container at /app
-COPY .optimade.json /app/optimade-python-tools/.optimade.json
+COPY .optimade.json /root/.optimade.json
 
 # Perform search and replace using sed
-RUN sed -i "s/DB_AUTH_USER/${DB_AUTH_USER}/g" /app/optimade-python-tools/.optimade.json
-RUN sed -i "s/DB_AUTH_PASSWORD/${DB_AUTH_PASSWORD}/g" /app/optimade-python-tools/.optimade.json
-RUN sed -i "s/DB_SERVER/${DB_SERVER}/g" /app/optimade-python-tools/.optimade.json
-RUN sed -i "s/DB_PORT/${DB_PORT}/g" /app/optimade-python-tools/.optimade.json
-RUN sed -i "s/DB_NAME/${DB_NAME}/g" /app/optimade-python-tools/.optimade.json
-RUN sed -i "s/DB_AUTHSOURCE/${DB_AUTHSOURCE}/g" /app/optimade-python-tools/.optimade.json
-RUN sed -i "s/PROTOCOL/${PROTOCOL}/g" /app/optimade-python-tools/.optimade.json
-RUN sed -i "s/URL/${URL}/g" /app/optimade-python-tools/.optimade.json
+RUN sed -i "s/DB_AUTH_USER/${DB_AUTH_USER}/g" /root/.optimade.json
+RUN sed -i "s/DB_AUTH_PASSWORD/${DB_AUTH_PASSWORD}/g" /root/.optimade.json
+RUN sed -i "s/DB_SERVER/${DB_SERVER}/g" /root/.optimade.json
+RUN sed -i "s/DB_PORT/${DB_PORT}/g" /root/.optimade.json
+RUN sed -i "s/DB_NAME/${DB_NAME}/g" /root/.optimade.json
+RUN sed -i "s/DB_AUTHSOURCE/${DB_AUTHSOURCE}/g" /root/.optimade.json
+RUN sed -i "s/PROTOCOL/${PROTOCOL}/g" /root/.optimade.json
+RUN sed -i "s/URL/${URL}/g" /root/.optimade.json
 
 # Expose the port where the app runs on
 EXPOSE ${OPTIMADE_INNER_PORT}
