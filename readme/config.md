@@ -67,7 +67,6 @@ An `.env` file must be created in the **root** of the project. The file [**.env.
 | REST_DB_LOGIN    | string  | db user for website REST API                               |
 | REST_DB_PASSWORD    | string  | db password for website REST API                               |
 | &nbsp;
-| &nbsp;
 | OPTIMADE_REPLICAS      | number  | number of replicas to deploy                                    |
 | OPTIMADE_OUTER_PORT         | number  | OPTIMADE outer port                                         |
 | OPTIMADE_INNER_PORT         | number  | OPTIMADE inner port                                         |
@@ -75,6 +74,7 @@ An `.env` file must be created in the **root** of the project. The file [**.env.
 | OPTIMADE_MEMORY_LIMIT    | string  | OPTIMADE limit memory                             |
 | OPTIMADE_CPU_RESERVATION    | string  | OPTIMADE reserved number of CPUs                               |
 | OPTIMADE_MEMORY_RESERVATION    | string  | OPTIMADE reserved memory                               |
+| &nbsp;
 | DB_VOLUME_PATH         | string  | path where the DB will deploy the mongoDB file system                                        |
 | DB_REPLICAS      | number  | number of replicas to deploy                                    |
 | DB_OUTER_PORT         | number  | DB outer port                                         |

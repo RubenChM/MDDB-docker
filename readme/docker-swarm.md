@@ -34,7 +34,7 @@ For building the services via **Docker Compose**, please execute the following i
 docker compose build
 ```
 
-**Note:** for building **extension** services as well, please execute the following instruction:
+**Note:** for building **extension** services as well, please execute the following instruction instead:
 
 ```sh
 docker compose -f docker-compose.yml -f extensions.yml build
@@ -47,7 +47,7 @@ export $(grep -v '^#' .env | xargs)
 docker stack deploy -c docker-compose.yml my_stack
 ```
 
-**Note:** for deploying **extension** services as well, please execute the following instructions:
+**Note:** for deploying **extension** services as well, please execute the following instructions instead:
 
 ```sh
 export $(grep -v '^#' .env | xargs)
