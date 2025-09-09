@@ -1,0 +1,44 @@
+services:
+  services_monitor:
+    image: services_monitor_image
+    build:
+      context: ./services-monitor
+      args:
+        DB_SERVER: ${VRE_LITE_DB_SERVER}
+        DB_PORT: ${VRE_LITE_DB_OUTER_PORT}
+        DB_NAME: ${VRE_LITE_MONGO_DATABASE}
+        DB_AUTH_USER: ${VRE_LITE_DB_LOGIN}
+        DB_AUTH_PASSWORD: ${VRE_LITE_DB_PASSWORD}
+        DB_AUTHSOURCE: ${VRE_LITE_MONGO_DATABASE}
+        API_PORT: ${SERVICES_MONITOR_API_INNER_PORT}
+        API_KEY: ${SERVICES_MONITOR_API_KEY}
+        SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
+        COLLECTOR_SCHEDULE_1: ${SERVICES_MONITOR_SCHEDULE_1}
+        COLLECTOR_SCHEDULE_2: ${SERVICES_MONITOR_SCHEDULE_2}
+        COLLECTOR_SCHEDULE_3: ${SERVICES_MONITOR_SCHEDULE_3}
+    volumes:
+      - services_monitor_log_volume:/var/log/services-monitor
+    ports:
+      - "${SERVICES_MONITOR_API_OUTER_PORT}:${SERVICES_MONITOR_API_INNER_PORT}"
+    networks:
+      - data_network
+      - web_network
+    deploy:
+      replicas: ${SERVICES_MONITOR_REPLICAS}
+      resources:
+        limits:
+          cpus: ${SERVICES_MONITOR_CPU_LIMIT}
+          memory: ${SERVICES_MONITOR_MEMORY_LIMIT}
+        reservations:
+          cpus: ${SERVICES_MONITOR_CPU_RESERVATION}
+          memory: ${SERVICES_MONITOR_MEMORY_RESERVATION}
+      restart_policy:
+        condition: any
+
+volumes:
+  services_monitor_log_volume:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${SERVICES_VOLUME_PATH}   # bind the volume to SERVICES_VOLUME_PATH on the host

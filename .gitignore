@@ -6,4 +6,8 @@
 client/mdposit_client
 client/build
 /cronjobs
+/logs
 __pycache__
+node_modules/
+package-lock.json
+dev.*
