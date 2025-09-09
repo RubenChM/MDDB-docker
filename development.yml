@@ -17,7 +17,7 @@ services:
         COLLECTOR_SCHEDULE_2: ${SERVICES_MONITOR_SCHEDULE_2}
         COLLECTOR_SCHEDULE_3: ${SERVICES_MONITOR_SCHEDULE_3}
     volumes:
-      - services_monitor_log_volume:/var/log/services-monitor
+      - services_monitor_log_volume:/var/log
     ports:
       - "${SERVICES_MONITOR_API_OUTER_PORT}:${SERVICES_MONITOR_API_INNER_PORT}"
     networks:
