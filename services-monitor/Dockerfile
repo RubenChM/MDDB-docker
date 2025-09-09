@@ -54,9 +54,6 @@ ENV API_PORT=${API_PORT}
 ENV API_KEY=${API_KEY}
 ENV SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
 
-# Create log directory
-RUN mkdir -p /var/log/services-monitor
-
 # Create crontab with two daily executions (using ARG values or defaults)
 RUN echo "${COLLECTOR_SCHEDULE_1} cd /app/scripts && python3 collector.py >> /var/log/services-monitor/collector.log 2>&1" > /etc/cron.d/services-monitor && \
     echo "${COLLECTOR_SCHEDULE_2} cd /app/scripts && python3 collector.py >> /var/log/services-monitor/collector.log 2>&1" >> /etc/cron.d/services-monitor && \
@@ -68,7 +65,7 @@ RUN chmod 0644 /etc/cron.d/services-monitor && \
 
 # Create startup script
 RUN echo '#!/bin/sh' > /usr/local/bin/start.sh && \
-    # echo 'mkdir -p /var/log/services-monitor' >> /usr/local/bin/start.sh && \
+    echo 'mkdir -p /var/log/services-monitor' >> /usr/local/bin/start.sh && \
     echo 'touch /var/log/services-monitor/collector.log' >> /usr/local/bin/start.sh && \
     echo 'touch /var/log/services-monitor/report_generator.log' >> /usr/local/bin/start.sh && \
     echo 'touch /var/log/services-monitor/api.log' >> /usr/local/bin/start.sh && \
