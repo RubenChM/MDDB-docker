@@ -43,14 +43,14 @@ docker compose -f docker-compose.yml -f extensions.yml build
 Export environment variables defined in [**global .env file**](config.md#env-file) and deploy docker stack:
 
 ```sh
-export $(grep -v '^#' .env | xargs)
+set -a; source .env; set +a
 docker stack deploy -c docker-compose.yml my_stack
 ```
 
 **Note:** for deploying **extension** services as well, please execute the following instructions instead:
 
 ```sh
-export $(grep -v '^#' .env | xargs)
+set -a; source .env; set +a
 docker stack deploy -c docker-compose.yml -c extensions.yml my_stack 
 ```
 

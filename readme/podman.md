@@ -11,7 +11,7 @@ In computing, **Podman** (pod manager) is an open source **Open Container Initia
 Export environment variables defined in [**global .env file**](config.md#env-file):
 
 ```sh
-export $(grep -v '^#' .env | xargs)
+set -a; source .env; set +a
 ```
 
 ### Create networks

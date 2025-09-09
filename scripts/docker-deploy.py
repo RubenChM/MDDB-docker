@@ -285,7 +285,7 @@ def deploy_stack(rm):
         print("Error: Neither 'docker-compose' nor 'docker compose' commands are available.")
         sys.exit(1)
 
-    subprocess.run(f"export $(grep -v '^#' .env | xargs) && docker stack deploy -c docker-compose.yml {stack_name}", shell=True, check=True, executable='/bin/bash')
+    subprocess.run(f"set -a && source .env && set +a && docker stack deploy -c docker-compose.yml {stack_name}", shell=True, check=True, executable='/bin/bash')
 
     # Poll until MinIO is up and running
     if 'env_vars' not in locals():

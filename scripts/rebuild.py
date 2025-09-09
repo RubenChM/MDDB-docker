@@ -55,7 +55,7 @@ def main():
             print("Error: Stack name is required when using Docker mode.")
             sys.exit(1)
 
-        subprocess.run("export $(grep -v '^#' .env | xargs)", shell=True, check=True, executable='/bin/bash')
+        subprocess.run("set -a && source .env && set +a", shell=True, check=True, executable='/bin/bash')
 
         # Build services with --no-cache
         build_command = docker_compose_script()
