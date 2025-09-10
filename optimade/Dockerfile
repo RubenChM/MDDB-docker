@@ -19,14 +19,13 @@ ARG URL
 # Define working dir
 WORKDIR /app
 
-# Clone and install optimade-python-tools
-RUN git clone https://github.com/JPBergsma/optimade-python-tools.git && \
-    cd optimade-python-tools && \
-    git checkout JPBergsma_BioExcel && \
+# Clone and install MDDB-optimade
+RUN git clone https://github.com/mmb-irb/MDDB-optimade.git && \
+    cd MDDB-optimade && \
     pip install -e .[server]
 
 # Define working dir
-WORKDIR /app/optimade-python-tools
+WORKDIR /app/MDDB-optimade
 
 # Copy the current directory contents into the container at /app
 COPY .optimade.json /root/.optimade.json

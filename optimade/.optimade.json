@@ -9,7 +9,7 @@
     "default_db": "test_server",
     "root_path": "/optimade",
     "implementation": {
-        "name": "MDPOSIT implementation",
+        "name": "MDposit implementation",
         "source_url": "https://github.com/Materials-Consortia/optimade-python-tools",
         "issue_tracker": "https://github.com/Materials-Consortia/optimade-python-tools/issues",
         "maintainer": {"email": "daniel.beltran@irbbarcelona.org"}
@@ -17,14 +17,25 @@
     "provider": {
         "name": "IRB Barcelona",
         "description": "A database with molecular dynamics for biological molecules",
-        "prefix": "bioxl",
-	"homepage": "PROTOCOL://URL"
+        "prefix": "mddb",
+	    "homepage": "PROTOCOL://URL"
     },
     "provider_homepage": {
 	    "PROTOCOL://URL/optimade": "PROTOCOL://URL"
     },
     "provider_fields": {
-        "trajectories": [{
+        "trajectories": [
+            {
+                "name": "mdref",
+                "description": "Index of the reference MD.",
+                "type": "int"
+            },
+            {
+                "name": "mds",
+                "description": "Data related to the actual trajectories inside the current project.",
+                "type": "list"
+            },
+            {
                 "name": "metadata.TIMESTEP",
                 "description": "The timestep between frames of the trajectory.",
                 "unit": "ps",
@@ -93,7 +104,7 @@
                 "type": "string"
             },{
                 "name": "metadata.LINKS",
-                "description": "URL links to simulation related web sites",
+                "description": "irb-dev.mddbr.eu links to simulation related web sites",
                 "type": "list"
             },{
                 "name": "metadata.AUTHORS",
@@ -110,13 +121,34 @@
 
 	    }
         ],
-        "references": ["orcid", "num_citations"]
+        "references": [
+            {
+                "name": "uniprot",
+                "description": "Protein UniProt ID",
+                "type": "string"
+	    },
+	    {
+                "name": "name",
+                "description": "Protein name",
+                "type": "string"
+	    },
+	    {
+                "name": "gene",
+                "description": "Protein gene name",
+                "type": "string"
+	    },
+	    {
+                "name": "organism",
+                "description": "Protein source organism",
+                "type": "string"
+
+	    }
+        ]
     },
     "aliases": {
         "trajectories":{
           "id": "accession",
-          "reference_structure.nsites": "metadata.atomCount",
-          "nframes": "metadata.SNAPSHOTS"
+          "reference_structure.nsites": "metadata.atomCount"
         }
     },
     "length_aliases": {
@@ -126,5 +158,5 @@
     "enabled_response_formats": ["json", "hdf5"],
     "max_response_size": {"json": 40, "hdf5": 200},
     "page_limit": 5,
-    "exclude_from_reference_structure": ["cartesian_site_positions","species_at_sites"]
+    "exclude_from_reference_structure": []
 }

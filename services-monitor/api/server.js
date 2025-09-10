@@ -287,7 +287,8 @@ app.get('/api/data', async (req, res) => {
             success, 
             start_date, 
             end_date,
-            active 
+            active, 
+            latest 
         } = req.query;
 
         const skip = (page - 1) * limit;
@@ -353,6 +354,36 @@ app.get('/api/data', async (req, res) => {
             if (end_date) {
                 query.timestamp.$lte = new Date(end_date);
             }
+        }
+
+        // If 'latest' parameter is true, get only the latest entry per node
+        if (latest === 'true') {
+            // Get latest entry per node
+            const latestData = await db.collection('collected_data').aggregate([
+                { $sort: { timestamp: -1 } },
+                {
+                    $group: {
+                        _id: '$node',
+                        doc: { $first: '$$ROOT' }
+                    }
+                },
+                { $replaceRoot: { newRoot: '$doc' } },
+                { $skip: skip },
+                { $limit: parseInt(limit) }
+            ]).toArray();
+
+            const totalCount = await db.collection('collected_data').distinct('node', query);
+            
+            return res.json({
+                success: true,
+                data: latestData,
+                pagination: {
+                    page: parseInt(page),
+                    limit: parseInt(limit),
+                    total: totalCount.length,
+                    pages: Math.ceil(totalCount.length / limit)
+                }
+            });
         }
 
         const [data, totalCount] = await Promise.all([
