@@ -455,7 +455,7 @@ class DataFetcher:
         try:
             error_data = {
                 'site_id': str(site_config['_id']),
-                'site_name': site_config['node'],
+                'node': site_config['node'],
                 'url': site_config['url'],
                 'timestamp': datetime.utcnow(),
                 'error_message': error_message,
