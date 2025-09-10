@@ -54,14 +54,20 @@ ENV API_PORT=${API_PORT}
 ENV API_KEY=${API_KEY}
 ENV SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
 
-# Create crontab with two daily executions (using ARG values or defaults)
-RUN echo "${COLLECTOR_SCHEDULE_1} cd /app/scripts && python3 collector.py >> /var/log/services-monitor/collector.log 2>&1" > /etc/cron.d/services-monitor && \
-    echo "${COLLECTOR_SCHEDULE_2} cd /app/scripts && python3 collector.py >> /var/log/services-monitor/collector.log 2>&1" >> /etc/cron.d/services-monitor && \
-    echo "${COLLECTOR_SCHEDULE_3} cd /app/scripts && python3 report_generator.py >> /var/log/services-monitor/report_generator.log 2>&1" >> /etc/cron.d/services-monitor
+# Create crontab with process locking to prevent duplicates
+RUN echo "${COLLECTOR_SCHEDULE_1} flock -n /tmp/collector.lock -c 'cd /app/scripts && python3 collector.py' >> /var/log/services-monitor/collector.log 2>&1" > /etc/cron.d/services-monitor && \
+    echo "${COLLECTOR_SCHEDULE_2} flock -n /tmp/collector.lock -c 'cd /app/scripts && python3 collector.py' >> /var/log/services-monitor/collector.log 2>&1" >> /etc/cron.d/services-monitor && \
+    echo "${COLLECTOR_SCHEDULE_3} flock -n /tmp/report.lock -c 'cd /app/scripts && python3 report_generator.py' >> /var/log/services-monitor/report_generator.log 2>&1" >> /etc/cron.d/services-monitor && \
+    chmod 0644 /etc/cron.d/services-monitor
 
-# Set proper permissions for crontab
-RUN chmod 0644 /etc/cron.d/services-monitor && \
-    crontab /etc/cron.d/services-monitor
+# Create crontab with process locking to prevent duplicates
+# RUN echo "${COLLECTOR_SCHEDULE_1} flock -n /tmp/collector.lock -c 'cd /app/scripts && python3 collector.py' >> /var/log/services-monitor/collector.log 2>&1" > /etc/cron.d/services-monitor && \
+#     echo "${COLLECTOR_SCHEDULE_2} flock -n /tmp/collector.lock -c 'cd /app/scripts && python3 collector.py' >> /var/log/services-monitor/collector.log 2>&1" >> /etc/cron.d/services-monitor && \
+#     echo "${COLLECTOR_SCHEDULE_3} flock -n /tmp/report.lock -c 'cd /app/scripts && python3 report_generator.py' >> /var/log/services-monitor/report_generator.log 2>&1" >> /etc/cron.d/services-monitor
+
+# # Set proper permissions for crontab
+# RUN chmod 0644 /etc/cron.d/services-monitor && \
+#     crontab /etc/cron.d/services-monitor
 
 # Create startup script
 RUN echo '#!/bin/sh' > /usr/local/bin/start.sh && \
