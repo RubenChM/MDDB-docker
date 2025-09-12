@@ -4,6 +4,12 @@ services:
       args:
         SERVICES_MONITOR_API_INNER_PORT: ${SERVICES_MONITOR_API_INNER_PORT}
 
+  vre_lite:
+    build:
+      args:
+        API_KEY: ${SERVICES_MONITOR_API_KEY}
+        URL_DEV: ${URL_DEV}
+
   services_monitor:
     image: services_monitor_image
     build:

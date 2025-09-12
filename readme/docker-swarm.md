@@ -37,7 +37,7 @@ docker compose build
 **Note:** for building **extension** services as well, please execute the following instruction instead:
 
 ```sh
-docker compose -f docker-compose.yml -f extensions.yml build
+docker compose -f docker-compose.yml -f extensions/extension1.yml build
 ```
 
 Export environment variables defined in [**global .env file**](config.md#env-file) and deploy docker stack:
@@ -51,7 +51,7 @@ docker stack deploy -c docker-compose.yml my_stack
 
 ```sh
 set -a; source .env; set +a
-docker stack deploy -c docker-compose.yml -c extensions.yml my_stack 
+docker stack deploy -c docker-compose.yml -c extensions/extension1.yml my_stack 
 ```
 
 Check services:
