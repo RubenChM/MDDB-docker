@@ -1,4 +1,9 @@
 services:
+  apache:
+    build:
+      args:
+        SERVICES_MONITOR_API_INNER_PORT: ${SERVICES_MONITOR_API_INNER_PORT}
+
   services_monitor:
     image: services_monitor_image
     build:

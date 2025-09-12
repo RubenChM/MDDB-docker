@@ -28,8 +28,8 @@ RUN sed -i "s/APACHE_HTTPS_OUTER_PORT/${APACHE_HTTPS_OUTER_PORT}/g" /usr/local/a
 RUN sed -i "s/APACHE_MINIO_OUTER_PORT/${APACHE_MINIO_OUTER_PORT}/g" /usr/local/apache2/conf/conf.d/custom.conf
 RUN sed -i "s/CLIENT_INNER_PORT/${CLIENT_INNER_PORT}/g" /usr/local/apache2/conf/conf.d/custom.conf
 RUN sed -i "s/REST_INNER_PORT/${REST_INNER_PORT}/g" /usr/local/apache2/conf/conf.d/custom.conf
-RUN sed -i "s/OPTIMADE_INNER_PORT/${OPTIMADE_INNER_PORT}/g" /usr/local/apache2/conf/conf.d/custom.conf
-RUN sed -i "s/SERVICES_MONITOR_API_INNER_PORT/${SERVICES_MONITOR_API_INNER_PORT}/g" /usr/local/apache2/conf/conf.d/custom.conf
+RUN sed -i "s/OPTIMADE_INNER_PORT/${OPTIMADE_INNER_PORT:-5000}/g" /usr/local/apache2/conf/conf.d/custom.conf
+RUN sed -i "s/SERVICES_MONITOR_API_INNER_PORT/${SERVICES_MONITOR_API_INNER_PORT:-3001}/g" /usr/local/apache2/conf/conf.d/custom.conf
 RUN sed -i "s/VRE_LITE_INNER_PORT/${VRE_LITE_INNER_PORT}/g" /usr/local/apache2/conf/conf.d/custom.conf
 RUN sed -i "s/MINIO_UI_INNER_PORT/${MINIO_UI_INNER_PORT}/g" /usr/local/apache2/conf/conf.d/custom.conf
 RUN sed -i "s/MINIO_API_INNER_PORT/${MINIO_API_INNER_PORT}/g" /usr/local/apache2/conf/conf.d/custom.conf

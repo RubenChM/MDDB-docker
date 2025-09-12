@@ -1,4 +1,9 @@
 services:
+  apache:
+    build:
+      args:
+        OPTIMADE_INNER_PORT: ${OPTIMADE_INNER_PORT}
+        
   optimade:
     image: optimade_image
     build:

@@ -60,15 +60,6 @@ RUN echo "${COLLECTOR_SCHEDULE_1} flock -n /tmp/collector.lock -c 'cd /app/scrip
     echo "${COLLECTOR_SCHEDULE_3} flock -n /tmp/report.lock -c 'cd /app/scripts && python3 report_generator.py' >> /var/log/services-monitor/report_generator.log 2>&1" >> /etc/cron.d/services-monitor && \
     chmod 0644 /etc/cron.d/services-monitor
 
-# Create crontab with process locking to prevent duplicates
-# RUN echo "${COLLECTOR_SCHEDULE_1} flock -n /tmp/collector.lock -c 'cd /app/scripts && python3 collector.py' >> /var/log/services-monitor/collector.log 2>&1" > /etc/cron.d/services-monitor && \
-#     echo "${COLLECTOR_SCHEDULE_2} flock -n /tmp/collector.lock -c 'cd /app/scripts && python3 collector.py' >> /var/log/services-monitor/collector.log 2>&1" >> /etc/cron.d/services-monitor && \
-#     echo "${COLLECTOR_SCHEDULE_3} flock -n /tmp/report.lock -c 'cd /app/scripts && python3 report_generator.py' >> /var/log/services-monitor/report_generator.log 2>&1" >> /etc/cron.d/services-monitor
-
-# # Set proper permissions for crontab
-# RUN chmod 0644 /etc/cron.d/services-monitor && \
-#     crontab /etc/cron.d/services-monitor
-
 # Create startup script
 RUN echo '#!/bin/sh' > /usr/local/bin/start.sh && \
     echo 'mkdir -p /var/log/services-monitor' >> /usr/local/bin/start.sh && \
