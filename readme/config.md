@@ -617,6 +617,6 @@ The [**extensions**](../extensions) files specify **complementary** services, wh
 
 All the configurable variables such as **resources**, **paths**, **ports** and so on must be defined in the [**extensions .env file**](#extensions-env-file).
 
-List of extension files:
+List of available **extensions**:
 
-* OPTIMADE: [**extensions/optimade.yml**](../extensions/optimade.yml)
+* [**extensions/optimade.yml**](OPTIMADE): The **Open Databases Integration for Materials Design** (OPTIMADE) consortium aims to make materials databases interoperable by developing a specification for a common REST API.
