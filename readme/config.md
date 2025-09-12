@@ -619,4 +619,4 @@ All the configurable variables such as **resources**, **paths**, **ports** and s
 
 List of available **extensions**:
 
-* [**extensions/optimade.yml**](OPTIMADE): The **Open Databases Integration for Materials Design** (OPTIMADE) consortium aims to make materials databases interoperable by developing a specification for a common REST API.
+* [**OPTIMADE**](extensions/optimade.yml): The **Open Databases Integration for Materials Design** (OPTIMADE) consortium aims to make materials databases interoperable by developing a specification for a common REST API.
