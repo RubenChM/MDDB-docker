@@ -44,7 +44,9 @@ def main():
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-d', dest='mode', action='store_const', const='d', default='d', help='Use Docker (default)')
     group.add_argument('-p', dest='mode', action='store_const', const='p', help='Use Podman')
-    parser.add_argument('-s', '--services', nargs='+', required=True, help='List of services to build and push into the stack.')
+    parser.add_argument('-s', '--services', nargs='+', required=False, help='List of services to build and push into the stack.')
+    parser.add_argument('-e', '--extensions', nargs='+', required=False, help='List of extension services to build and push into the stack.')
+    parser.add_argument('-d', '--development', nargs='+', required=False, help='List of development services to build and push into the stack.')
     parser.add_argument('-t', '--stack', type=str, required=False, help='Name of the stack where the services are running (only for docker swarm).')
 
     args = parser.parse_args()
@@ -55,19 +57,31 @@ def main():
             print("Error: Stack name is required when using Docker mode.")
             sys.exit(1)
 
+        if not args.services and not args.extensions and not args.development:
+            print("Error: At least one service must be specified.")
+            sys.exit(1)
+
         subprocess.run("set -a && source .env && set +a", shell=True, check=True, executable='/bin/bash')
 
         # Build services with --no-cache
         build_command = docker_compose_script()
         build_command.append('build')
 
-        for service in args.services:
+        all_services = []
+        if args.services:
+            all_services.extend(args.services)
+        if args.extensions:
+            all_services.extend(args.extensions)
+        if args.development:
+            all_services.extend(args.development)
+
+        for service in all_services:
             build_command.extend(['--no-cache', service])
         print(f"Running command: {' '.join(build_command)}")
         run_command(build_command)
 
         # Update services
-        for service in args.services:
+        for service in all_services:
             # update service in the stack
             update_command = ['docker', 'service', 'update', '--force', f'{args.stack}_{service}']
             run_command(update_command)
@@ -93,6 +107,18 @@ def main():
 
     elif args.mode == 'p':
 
+        if not args.services and not args.extensions and not args.development:
+            print("Error: At least one service must be specified.")
+            sys.exit(1)
+
+        all_services = []
+        if args.services:
+            all_services.extend(args.services)
+        if args.extensions:
+            all_services.extend(args.extensions)
+        if args.development:
+            all_services.extend(args.development)
+
         # Parse .env file and update os.environ
         with open('.env') as f:
             for line in f:
@@ -101,13 +127,13 @@ def main():
                     key, value = line.split('=', 1)
                     os.environ[key] = value
 
-        for service in args.services:
+        for service in all_services:
             if service != 'mongodb':
                 subprocess.run(f"podman stop {service} || true && podman rm {service} || true", shell=True, check=True, executable='/bin/bash')
             b = get_podman_script('build', service)
             run_command_p(b)
 
-        for service in args.services:
+        for service in all_services:
             r = get_podman_script('run', service)
             run_command_p(r)
 
