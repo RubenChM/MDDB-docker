@@ -46,7 +46,7 @@ def main():
     group.add_argument('-p', dest='mode', action='store_const', const='p', help='Use Podman')
     parser.add_argument('-s', '--services', nargs='+', required=False, help='List of services to build and push into the stack.')
     parser.add_argument('-e', '--extensions', nargs='+', required=False, help='List of extension services to build and push into the stack.')
-    parser.add_argument('-d', '--development', nargs='+', required=False, help='List of development services to build and push into the stack.')
+    parser.add_argument('-v', '--development', nargs='+', required=False, help='List of development services to build and push into the stack.')
     parser.add_argument('-t', '--stack', type=str, required=False, help='Name of the stack where the services are running (only for docker swarm).')
 
     args = parser.parse_args()
