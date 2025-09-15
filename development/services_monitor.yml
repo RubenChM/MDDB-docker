@@ -13,7 +13,7 @@ services:
   services_monitor:
     image: services_monitor_image
     build:
-      context: ./services-monitor
+      context: ./services_monitor
       args:
         DB_SERVER: ${VRE_LITE_DB_SERVER}
         DB_PORT: ${VRE_LITE_DB_OUTER_PORT}
