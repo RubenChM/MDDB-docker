@@ -70,8 +70,6 @@ def main():
         all_services = []
         if args.services:
             all_services.extend(args.services)
-            for service in args.services:
-                build_command.extend(['--no-cache', service])
         if args.extensions:
             all_services.extend(args.extensions)
             for service in args.extensions:
