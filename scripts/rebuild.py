@@ -75,13 +75,23 @@ def main():
         if args.extensions:
             all_services.extend(args.extensions)
             for service in args.extensions:
-                build_command.extend(['-f', f'extensions/{service}.yml', '--no-cache', service])
+                build_command.extend(['-f', f'extensions/{service}.yml'])
         if args.development:
             all_services.extend(args.development)
             for service in args.development:
-                build_command.extend(['-f', f'development/{service}.yml', '--no-cache', service])
+                build_command.extend(['-f', f'development/{service}.yml'])
 
         build_command.append('build')
+
+        if args.services:
+            for service in args.services:
+                build_command.extend(['--no-cache', service])
+        if args.extensions:
+            for service in args.extensions:
+                build_command.extend(['--no-cache', service])
+        if args.development:
+            for service in args.development:
+                build_command.extend(['--no-cache', service])
 
         print(f"Running command: {' '.join(build_command)}")
         run_command(build_command)
