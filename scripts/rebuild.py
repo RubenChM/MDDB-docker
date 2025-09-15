@@ -65,7 +65,6 @@ def main():
 
         # Build services with --no-cache
         build_command = docker_compose_script()
-        build_command.append('build')
 
         all_services = []
         if args.services:
@@ -81,6 +80,8 @@ def main():
             all_services.extend(args.development)
             for service in args.development:
                 build_command.extend(['-f', f'development/{service}.yml', '--no-cache', service])
+
+        build_command.append('build')
 
         print(f"Running command: {' '.join(build_command)}")
         run_command(build_command)
