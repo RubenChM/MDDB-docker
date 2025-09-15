@@ -65,11 +65,11 @@ def main():
 
         # Build services with --no-cache
         build_command = docker_compose_script()
+        build_command.extend(['-f', 'docker-compose.yml'])
 
         all_services = []
         if args.services:
             all_services.extend(args.services)
-            build_command.extend(['-f', 'docker-compose.yml'])
             for service in args.services:
                 build_command.extend(['--no-cache', service])
         if args.extensions:
