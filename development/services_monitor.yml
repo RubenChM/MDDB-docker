@@ -1,3 +1,6 @@
+# NOTE THAT services_monitor AND vre_lite SERVICES MUST BE RESTARTED AT THE SAME TIME TO APPLY ANY CHANGES TO THE ENVIRONMENT VARIABLES:
+# python3 scripts/rebuild.py -s vre_lite -v services_monitor -t my_stack
+
 services:
   apache:
     build:
