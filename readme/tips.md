@@ -88,10 +88,22 @@ When working with Docker, **even after removing images and containers**, Docker 
 
 ## Scale a service:
 
-Add two more replicas to my_stack_website:
+Add two more replicas to my_stack_client:
 
 ```sh
-docker service scale my_stack_website=4
+docker service scale my_stack_client=4
+```
+
+Set new memory limit to my_stack_client:
+
+```sh
+docker service update --limit-memory 1g my_stack_client
+```
+
+Multiple options:
+
+```sh
+docker service update --limit-memory 1g --reserve-memory 512m --limit-cpu 2 --replicas 3 my_stack_client
 ```
 
 ## Stop a service:
