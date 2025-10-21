@@ -166,7 +166,7 @@ Take into account that acessing mongoDB as **root/admin** user is **not recommen
 
 ## Add new user to Mongo
 
-The actions of the **mongo-init.js**](../mongodb/mongo-init.js) file are executed only once, when the mongodb service is deployed for the first time. For avoiding to wipe out the database and deploying the service from scratch, execute the following code for adding a new user to the database:
+The actions of the [**mongo-init.js**](../mongodb/mongo-init.js) file are executed only once, when the mongodb service is deployed for the first time. For avoiding to wipe out the database and deploying the service from scratch, execute the following code for adding a new user to the database:
 
 ```js
 docker exec -it <mongo_container_ID> mongosh \
