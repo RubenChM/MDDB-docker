@@ -46,7 +46,7 @@ WORKDIR /app/MDDB-REST-API
 RUN npm install
 
 # Build website
-RUN npm run build
+RUN npm run build:dev
 
 # Stage 2: Serve the REST API app with pm2
 FROM docker.io/library/nginx:alpine
