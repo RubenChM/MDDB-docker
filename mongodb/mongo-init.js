@@ -45,14 +45,14 @@ createUserIfNotExists(
 );
 
 // Switch to the VRE Lite database
-db = db.getSiblingDB(process.env.VRE_LITE_MONGO_DATABASE);
+db = db.getSiblingDB(process.env.MONGO_VRE_DATABASE);
 
-// Create a user with readWrite permissions on <VRE_LITE_MONGO_DATABASE> database. This user will be used for the VRE
+// Create a user with readWrite permissions on <MONGO_VRE_DATABASE> database. This user will be used for the VRE
 createUserIfNotExists(
   db,
   process.env.VRE_LITE_DB_LOGIN,
   process.env.VRE_LITE_DB_PASSWORD,
-  [{ role: 'readWrite', db: process.env.VRE_LITE_MONGO_DATABASE }]
+  [{ role: 'readWrite', db: process.env.MONGO_VRE_DATABASE }]
 );
 
 print('Database initialization completed.');
