@@ -133,6 +133,8 @@ An `.env` file must be created in the **root** of the project. The file [**.env.
 | &nbsp;
 | MONGO_INITDB_ROOT_USERNAME      | string  | root user for the DB                         |
 | MONGO_INITDB_ROOT_PASSWORD      | string  | root password for the DB                       |
+| MONGO_CONTAINER_USER      | string  | mongoDB container user ID                        |
+| MONGO_CONTAINER_GROUP      | string  | mongoDB container group ID                        |
 | &nbsp;
 | MINIO_ROOT_USER      | string  | MinIO root user                         |
 | MINIO_ROOT_PASSWORD      | string  | MinIO root password                      |
@@ -231,6 +233,7 @@ services:
     image: apache_image   # name of apache image
     build:
       context: ./apache   # folder to search Dockerfile for this image
+      # network: host  # Only during build
       args:
         APACHE_HTTP_INNER_PORT: ${APACHE_HTTP_INNER_PORT}
         APACHE_HTTPS_INNER_PORT: ${APACHE_HTTPS_INNER_PORT}
@@ -270,6 +273,7 @@ services:
     image: loader_image   # name of loader image
     build:
       context: ./loader   # folder to search Dockerfile for this image
+      # network: host  # Only during build
       args:
         DB_SERVER: ${DB_SERVER}
         DB_PORT: ${DB_OUTER_PORT}
@@ -295,6 +299,7 @@ services:
     image: workflow_image
     build:
       context: ./workflow   # folder to search Dockerfile for this image
+      # network: host  # Only during build
       args:
         MINIO_USER: ${MINIO_USER}
         MINIO_PASSWORD: ${MINIO_PASSWORD}
@@ -323,6 +328,7 @@ services:
     image: client_image
     build:
       context: ./client  # folder to search Dockerfile for this image
+      # network: host  # Only during build
       args:
         CLIENT_INNER_PORT: ${CLIENT_INNER_PORT}
     ports:
@@ -347,6 +353,7 @@ services:
     image: rest_image
     build:
       context: ./rest   # folder to search Dockerfile for this image
+      # network: host  # Only during build
       args:
         DB_SERVER: ${DB_SERVER}
         DB_PORT: ${DB_OUTER_PORT}
@@ -378,6 +385,7 @@ services:
 
   mongodb:
     image: mongo:6
+    user: "${MONGO_CONTAINER_USER}:${MONGO_CONTAINER_GROUP}"
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
@@ -489,6 +497,7 @@ services:
     image: vre_lite_image 
     build:
       context: ./vre_lite
+      # network: host  # Only during build
       args:
         MINIO_API_PORT: ${MINIO_API_INNER_PORT}
         VRE_LITE_INNER_PORT: ${VRE_LITE_INNER_PORT}

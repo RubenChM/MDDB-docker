@@ -28,6 +28,8 @@ docker network create --driver overlay --attachable minio_network
 
 > NOTE: In **docker old versions** the instruction for Docker Compose is with hyphen, so instead of `docker compose build`, `docker-compose build` must be typed and executed.
 
+⚠️ In some environments, where the **firewall policies** can be more **restrictives**, the build process can't be **unable to use the network**. In this case, please **enable** all the `# network: host  # Only during build` labels in the [**docker-compose.yml**](../docker-compose.yml) file. ⚠️ 
+
 For building the services via **Docker Compose**, please execute the following instruction:
 
 ```sh
@@ -39,6 +41,8 @@ docker compose build
 ```sh
 docker compose -f docker-compose.yml -f extensions/extension1.yml build
 ```
+
+⚠️ If `# network: host  # Only during build` labels were enabled in the [**docker-compose.yml**](../docker-compose.yml) file, please **disable** them again **before deploying** for the sake of preserving **network isolation**. ⚠️ 
 
 Export environment variables defined in [**global .env file**](config.md#env-file) and deploy docker stack:
 
@@ -73,6 +77,36 @@ Check nodes:
 
 ```sh
 docker node ls
+```
+
+⚠️ In case the environment variables **MONGO_CONTAINER_USER** and **MONGO_CONTAINER_GROUP** in the [**global .env**](config.md#env-file) were set to a different user than the standars `mongo / 999` or `root / 0`, the [**mongo-init.js**](../mongodb/mongo-init.js) won't be executed because it doesn't have the necessary permissions and it must be executed manually once the deploy is finished: ⚠️
+
+Get the **container id**:
+
+```sh
+docker ps --filter "label=com.docker.swarm.service.name=my_stack_mongodb"
+```
+
+Execute **mongo-init.js**:
+
+```sh
+docker exec -it \
+  -e MONGO_INITDB_DATABASE=${DB_NAME} \
+  -e LOADER_DB_LOGIN=${LOADER_DB_LOGIN} \
+  -e LOADER_DB_PASSWORD=${LOADER_DB_PASSWORD} \
+  -e REST_DB_LOGIN=${REST_DB_LOGIN} \
+  -e REST_DB_PASSWORD=${REST_DB_PASSWORD} \
+  -e VRE_LITE_MONGO_DATABASE=${VRE_LITE_MONGO_DATABASE} \
+  -e VRE_LITE_DB_LOGIN=${VRE_LITE_DB_LOGIN} \
+  -e VRE_LITE_DB_PASSWORD=${VRE_LITE_DB_PASSWORD} \
+  <ID> \
+  mongosh -u ${MONGO_INITDB_ROOT_USERNAME} -p ${MONGO_INITDB_ROOT_PASSWORD} /docker-entrypoint-initdb.d/mongo-init.js
+```
+
+**Update REST service** (as it was already running it needs to be restarted):
+
+```sh
+docker service update --force my_stack_rest
 ```
 
 ## Execute services
