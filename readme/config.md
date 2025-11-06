@@ -90,9 +90,6 @@ An `.env` file must be created in the **root** of the project. The file [**.env.
 | DB_BACKUP_MEMORY_RESERVATION      | string  | DB backup reserved memory                         |
 | &nbsp;
 | MINIO_VOLUME_PATH1         | string  | path for the volume1 where MinIO will save / retrieve the files                              |
-| MINIO_VOLUME_PATH2         | string  | path for the volume2 where MinIO will save / retrieve the files                              |
-| MINIO_VOLUME_PATH3         | string  | path for the volume3 where MinIO will save / retrieve the files                              |
-| MINIO_VOLUME_PATH4         | string  | path for the volume4 where MinIO will save / retrieve the files                              |
 | MINIO_REPLICAS      | number  | number of replicas to deploy                                    |
 | MINIO_API_OUTER_PORT         | number  | MinIO API outer port                                         |
 | MINIO_API_INNER_PORT         | number  | MinIO API inner port                                         |
