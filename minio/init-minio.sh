@@ -3,9 +3,9 @@
 echo "Initializing MinIO client..."
 
 # Start MinIO server in the background
-minio server --address ":${MINIO_API_INNER_PORT}" --console-address ":${MINIO_UI_INNER_PORT}" http://minio/mnt/disk{1...4} &
-
-# minio server --address ":${MINIO_API_INNER_PORT}" --console-address ":${MINIO_UI_INNER_PORT}" http://minio{1...3}/mnt/disk{1...4}    # For multiple nodes (ie 3 nodes)
+minio server --address ":${MINIO_API_INNER_PORT}" --console-address ":${MINIO_UI_INNER_PORT}" /mnt/disk1 &
+# minio server --address ":${MINIO_API_INNER_PORT}" --console-address ":${MINIO_UI_INNER_PORT}" /mnt/disk{1...4} &  # For single node, multi-drive configuration
+# minio server --address ":${MINIO_API_INNER_PORT}" --console-address ":${MINIO_UI_INNER_PORT}" http://minio{1...3}/mnt/disk{1...4} &   # For multiple nodes (ie 3 nodes), multi-drive configuration
 
 # Health check for the MinIO service
 echo "Waiting for MinIO to be healthy..."

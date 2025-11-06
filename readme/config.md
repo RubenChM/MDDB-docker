@@ -462,9 +462,9 @@ services:
     volumes:
       # paths where minio will store the data in object storage format (outside the container, in the host machine)
       - minio_volume1:/mnt/disk1   
-      - minio_volume2:/mnt/disk2
-      - minio_volume3:/mnt/disk3
-      - minio_volume4:/mnt/disk4
+      # - minio_volume2:/mnt/disk2
+      # - minio_volume3:/mnt/disk3
+      # - minio_volume4:/mnt/disk4
       - ./minio/init-minio.sh:/entrypoint.sh # Mount the initialization script
     ports:
       - "${MINIO_API_OUTER_PORT}:${MINIO_API_INNER_PORT}"
@@ -598,24 +598,24 @@ volumes:
       type: none
       o: bind
       device: ${MINIO_VOLUME_PATH1}   # bind the volume to MINIO_VOLUME_PATH1 on the host
-  minio_volume2:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${MINIO_VOLUME_PATH2}   # bind the volume to MINIO_VOLUME_PATH2 on the host
-  minio_volume3:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${MINIO_VOLUME_PATH3}   # bind the volume to MINIO_VOLUME_PATH3 on the host
-  minio_volume4:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${MINIO_VOLUME_PATH4}   # bind the volume to MINIO_VOLUME_PATH4 on the host
+  # minio_volume2:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     o: bind
+  #     device: ${MINIO_VOLUME_PATH2}   # bind the volume to MINIO_VOLUME_PATH2 on the host
+  # minio_volume3:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     o: bind
+  #     device: ${MINIO_VOLUME_PATH3}   # bind the volume to MINIO_VOLUME_PATH3 on the host
+  # minio_volume4:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     o: bind
+  #     device: ${MINIO_VOLUME_PATH4}   # bind the volume to MINIO_VOLUME_PATH4 on the host
   vre_lite_log_volume:
     driver: local
     driver_opts:

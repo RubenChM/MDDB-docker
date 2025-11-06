@@ -27,10 +27,7 @@ In the **volume** where the data is stored, create the following **/minio folder
 
 And inside this folder, as many **volumes** as **disks** defined in the [**docker-compose.yml**](../docker-compose.yml) file. For example:
 
-> /path/to/volume/minio/disk1 <br>
-/path/to/volume/minio/disk2 <br>
-/path/to/volume/minio/disk3 <br>
-/path/to/volume/minio/disk4
+> /path/to/volume/minio/disk1
 
 As MinIO allows a **multi-drive** configuration, it will **distribute** the data amongst these **volumes**.
 

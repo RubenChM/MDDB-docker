@@ -206,10 +206,7 @@ When executing the **deploy script**, the user will be prompted to answer some q
   * [**db_backup/**](readme/storage.md#mongodb-backup) (**MongoDB** data backup)
   * [**logs/**](readme/storage.md#logs) (**VRE lite** logs)
   * [**minio/**](readme/storage.md#minio) (**MinIO** data)
-    * disk1/ (**MinIO** data distributed in multi-drive configuration)
-    * disk2/ (**MinIO** data distributed in multi-drive configuration)
-    * disk3/ (**MinIO** data distributed in multi-drive configuration)
-    * disk4/ (**MinIO** data distributed in multi-drive configuration)
+    * disk1/ (**MinIO** data)
 
 * **SSL/TSL certificates:** If the **SSL/TSL** certificates are available, they can be copied into the **certs/** folder during the execution of the **script**. Be sure to have them located in the **same VM** where the script is being executed.
 * **Node:** Node identifier, mandatory. 
@@ -334,10 +331,7 @@ When executing the **deploy script**, the user will be prompted to answer some q
   * [**db/**](readme/storage.md#mongodb) (**MongoDB** data)
   * [**logs/**](readme/storage.md#logs) (**VRE lite** logs)
   * [**minio/**](readme/storage.md#minio) (**MinIO** data)
-    * disk1/ (**MinIO** data distributed in multi-drive configuration)
-    * disk2/ (**MinIO** data distributed in multi-drive configuration)
-    * disk3/ (**MinIO** data distributed in multi-drive configuration)
-    * disk4/ (**MinIO** data distributed in multi-drive configuration)
+    * disk1/ (**MinIO** data)
 
 * **SSL/TSL certificates:** If the **SSL/TSL** certificates are available, they can be copied into the **certs/** folder during the execution of the **script**. Be sure to have them located in the **same VM** where the script is being executed.
 * **Node:** Node identifier, mandatory. 
