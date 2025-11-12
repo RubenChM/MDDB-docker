@@ -99,23 +99,29 @@ Sometimes the **VM** has not enough space to store all the docker images, so it 
 Before moving Docker's storage directory, you need to **stop** the Docker service:
 
     sudo systemctl stop docker
+    sudo systemctl stop containerd
 
 #### Move the Docker Root Dir
 
-Now, move Docker's current storage directory (`/var/lib/docker`) to a volume out of the docker. This volume has been created previously in the [**storage step**](./storage.md#docker):
+Now, move Docker's current storage directories (`/var/lib/docker` and `/var/lib/containerd`) to a volume out of the docker. This volume has been created previously in the [**storage step**](./storage.md#docker):
 
     sudo mv /var/lib/docker /path/to/volume/docker
+    sudo mv /var/lib/containerd /path/to/volume/containerd
 
-#### Create a Symlink
+> **IMPORTANT!**: the `docker` and `containerd` folders inside `/path/to/volume` **must not be created beforehand**.
 
-Create a **symbolic link** so that Docker continues to look in `/var/lib/docker`, but the actual data is stored on the external disk:
+#### Create Symlinks
+
+Create **symbolic links** so that Docker continues to look in `/var/lib/docker` and `/var/lib/containerd`, but the actual data is stored on the external disk:
 
     sudo ln -s /path/to/volume/docker /var/lib/docker
+    sudo ln -s /path/to/volume/containerd /var/lib/containerd
 
 ### Start docker
 
 Now that Docker is configured to use the external disk, **start** the Docker service again:
 
+    sudo systemctl start containerd
     sudo systemctl start docker
 
 #### Check the Docker Info

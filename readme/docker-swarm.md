@@ -188,13 +188,13 @@ docker run --rm --network data_network --cpus "${LOADER_CPU_LIMIT}" --memory "${
 **Load** documents to database:
 
 ```sh
-docker compose run --rm loader load /data/<OUTPUT_FOLDER>
+docker compose run -it --rm loader load /data/<OUTPUT_FOLDER>
 ```
 
 Or, if the above doesn't work:
 
 ```sh
-docker run --rm --network data_network -v <WORKFLOW_VOLUME_PATH>:/data --cpus "${LOADER_CPU_LIMIT}" --memory "${LOADER_MEMORY_LIMIT}" loader_image load -a <ACCESSION> /data/<OUTPUT_FOLDER>
+docker run -it --rm --network data_network -v <WORKFLOW_VOLUME_PATH>:/data --cpus "${LOADER_CPU_LIMIT}" --memory "${LOADER_MEMORY_LIMIT}" loader_image load -a <ACCESSION> /data/<OUTPUT_FOLDER>
 ```
 
 Take into account that **OUTPUT_FOLDER** must be inside **WORKFLOW_VOLUME_PATH**, defined in [**global .env**](config.md#env-file).
