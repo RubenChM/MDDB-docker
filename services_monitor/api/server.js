@@ -296,6 +296,11 @@ app.get('/api/data', async (req, res) => {
         // Build query for collected data
         const query = {};
 
+        return res.json({
+                success: false,
+                data: "kk"
+            });
+
         // Only filter by active sites if 'active' parameter is provided
         if (active !== undefined) {
             const activeFilter = active === 'true';
