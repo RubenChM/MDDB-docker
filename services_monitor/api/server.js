@@ -296,11 +296,6 @@ app.get('/api/data', async (req, res) => {
         // Build query for collected data
         const query = {};
 
-        return res.json({
-                success: false,
-                data: "kk"
-            });
-
         // Only filter by active sites if 'active' parameter is provided
         if (active !== undefined) {
             const activeFilter = active === 'true';
@@ -313,11 +308,6 @@ app.get('/api/data', async (req, res) => {
             
             const siteIds = sites.map(site => site.node.toString());
             query.node = { $in: siteIds };
-
-            return res.json({
-                success: true,
-                data: sites
-            });
         }
 
         // Apply node filter
