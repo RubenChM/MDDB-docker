@@ -313,9 +313,11 @@ app.get('/api/data', async (req, res) => {
         // Apply node filter
         if (node) {
             if (active !== undefined) {
+                const activeFilter = active === 'true';
+
                 // If active filter is applied, check if the node matches the filter
                 const sites = await db.collection('data_collection_sites')
-                    .find({ active: active === 'true' })
+                    .find({ active: activeFilter })
                     .project({ node: 1 })
                     .toArray();
                 
