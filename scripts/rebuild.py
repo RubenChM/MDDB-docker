@@ -19,9 +19,19 @@ def run_command_p(command):
         print(f"Command '{command}' failed with return code {e.returncode}")
 
 
+# def command_exists(cmd):
+#     try:
+#         subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+#         return True
+#     except subprocess.CalledProcessError:
+#         return False
+#     except FileNotFoundError:
+#         return False
+
+
 def command_exists(cmd):
     try:
-        subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+        subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
         return True
     except subprocess.CalledProcessError:
         return False
@@ -30,12 +40,16 @@ def command_exists(cmd):
 
 
 def docker_compose_script():
-    if command_exists(['docker-compose', 'version']):
-        return ['docker-compose']
-    elif command_exists(['docker', 'compose', 'version']):
+    """Determine which docker compose command is available."""
+    # Try 'docker compose' (newer plugin version)
+    if command_exists(['docker', 'compose', 'version']):
         return ['docker', 'compose']
+    # Try 'docker-compose' (standalone binary)
+    elif command_exists(['docker-compose', 'version']):
+        return ['docker-compose']
     else:
-        print("Error: Neither 'docker-compose' nor 'docker compose' commands are available.")
+        print("❌ Error: Neither 'docker compose' nor 'docker-compose' commands are available.")
+        print("   Please install Docker Compose: https://docs.docker.com/compose/install/")
         sys.exit(1)
 
 
