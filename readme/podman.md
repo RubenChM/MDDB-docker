@@ -34,7 +34,7 @@ Typical execution:
 podman run -d --name mongodb -e MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME} -e MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD} -e MONGO_PORT=${DB_OUTER_PORT} -e MONGO_INITDB_DATABASE=${DB_NAME} -e LOADER_DB_LOGIN=${LOADER_DB_LOGIN} -e LOADER_DB_PASSWORD=${LOADER_DB_PASSWORD} -e MONGO_VRE_DATABASE=${VRE_LITE_MONGO_DATABASE} -e VRE_DB_LOGIN=${VRE_LITE_DB_LOGIN} -e VRE_DB_PASSWORD=${VRE_LITE_DB_PASSWORD} -e REST_DB_LOGIN=${REST_DB_LOGIN} -e REST_DB_PASSWORD=${REST_DB_PASSWORD} -p ${DB_OUTER_PORT}:${DB_OUTER_PORT} -v ${DB_VOLUME_PATH}:/data/db:Z -v $(pwd)/mongodb/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro --cpus "${DB_CPU_LIMIT}" --memory "${DB_MEMORY_LIMIT}" --network data_network --security-opt label=disable docker.io/library/mongo:6
 ```
 
-Sometimes, podman gives **problems with permissions**. Typically, these problems arise from using **NFS file systems** and **non-root permissions** in podman. Therefore, to avoid these problems, an alternative execution can be performed, using a [**mongo-nonroot.sh**](../mongodb/mongo-nonroot.sh) bash script for intialising the **mongodb** docker:
+Sometimes, podman gives **problems with permissions**. Typically, these problems arise from using **NFS file systems** and **non-root permissions** in podman. Therefore, to avoid these problems, an alternative execution can be performed, using a [**mongo-nonroot.sh**](../mongodb/mongo-nonroot.sh) bash script for intialising the **mongodb** service:
 
 ```sh
 podman run -d --name mongodb -e MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME} -e MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD} -e MONGO_PORT=${DB_OUTER_PORT} -e MONGO_INITDB_DATABASE=${DB_NAME} -e LOADER_DB_LOGIN=${LOADER_DB_LOGIN} -e LOADER_DB_PASSWORD=${LOADER_DB_PASSWORD} -e MONGO_VRE_DATABASE=${VRE_LITE_MONGO_DATABASE} -e VRE_DB_LOGIN=${VRE_LITE_DB_LOGIN} -e VRE_DB_PASSWORD=${VRE_LITE_DB_PASSWORD} -e REST_DB_LOGIN=${REST_DB_LOGIN} -e REST_DB_PASSWORD=${REST_DB_PASSWORD} -e DB_OUTER_PORT=${DB_OUTER_PORT} -p ${DB_OUTER_PORT}:${DB_OUTER_PORT} -v ${DB_VOLUME_PATH}:/data/db:Z -v $(pwd)/mongodb/mongo-nonroot.sh:/entrypoint.sh:Z --entrypoint /entrypoint.sh -v $(pwd)/mongodb/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro --cpus "${DB_CPU_LIMIT}" --memory "${DB_MEMORY_LIMIT}" --network data_network --security-opt label=disable docker.io/library/mongo:6
@@ -142,7 +142,7 @@ Before launching VRE lite, please be sure that **Podman socket** is initialised:
 $ systemctl --user status podman.socket
 ```
 
-If the socket is **not running** (ie it says Active: inactive (dead)), you need to **start it**:
+If the socket is **not running** (ie it says `Active: inactive (dead)`), you need to **start it**:
 
 ```sh
 systemctl --user start podman.socket 
