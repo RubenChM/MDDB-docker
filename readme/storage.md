@@ -19,6 +19,8 @@ In the **volume** where the data is stored, create the following **/docker folde
 
 All the **Docker images and data** will be stored inside this volume.
 
+**Note** that if the installation is over **Podman**, the procedure is exactly the same.
+
 ## MinIO
 
 In the **volume** where the data is stored, create the following **/minio folder**:

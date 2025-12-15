@@ -89,6 +89,28 @@ Additionally, users are able to access the database as a **root/admin** user, as
 
 Take into account that acessing mongoDB as **root/admin** user is **not recommended** as with this user there are **no restrictions** once inside the database. We strongly recommend to use the **users** defined in the [**mongo-init.js**](../mongodb/mongo-init.js) file for accessing the database.
 
+## Mongo restore
+
+If there is a previous version of the database it can be copied into the **mongodb** service. This is the instruction for performing a `mongorestore` from a **mongo dump**:
+
+    podman run --rm --network data_network -v <PATH_TO_MONGODUMP>:/dump mongo mongorestore --host <IP> --port 27017 --username <ROOT_USER> --password <ROOT_PASSWORD> --authenticationDatabase admin --db <DB_TO_RESTORE> /dump/<DB_TO_RESTORE>
+
+* **PATH_TO_MONGODUMP:** Path to the mongo dump.
+* **IP:** IP of the mongo service (*)
+* **ROOT_USER:** Root user for the DB.
+* **ROOT_PASSWORD:** Root password for the DB.
+* **DB_TO_RESTORE:** Name of the database to restore.
+
+(*) The IP of the mongo service can be obtained executing:
+
+    podman inspect -f '{{.NetworkSettings.Networks.data_network.IPAddress}}' mongodb
+
+## Check image version
+
+```sh
+podman run --entrypoint "" --rm <image_name> sh -c "cat /app/version.txt"
+```
+
 ## Podman logs
 
 Show logs for a container:

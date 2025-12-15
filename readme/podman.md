@@ -24,6 +24,36 @@ podman network create data_network
 podman network create minio_network
 ```
 
+## Deploy MongoDB
+
+The **first service** to be deployed is **mongodb** because some other services such as the **REST API** and the **VRE lite** need to know the **mongodb IP** address **before starting** the building process.
+
+Typical execution:
+
+```sh
+podman run -d --name mongodb -e MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME} -e MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD} -e MONGO_PORT=${DB_OUTER_PORT} -e MONGO_INITDB_DATABASE=${DB_NAME} -e LOADER_DB_LOGIN=${LOADER_DB_LOGIN} -e LOADER_DB_PASSWORD=${LOADER_DB_PASSWORD} -e MONGO_VRE_DATABASE=${VRE_LITE_MONGO_DATABASE} -e VRE_DB_LOGIN=${VRE_LITE_DB_LOGIN} -e VRE_DB_PASSWORD=${VRE_LITE_DB_PASSWORD} -e REST_DB_LOGIN=${REST_DB_LOGIN} -e REST_DB_PASSWORD=${REST_DB_PASSWORD} -p ${DB_OUTER_PORT}:${DB_OUTER_PORT} -v ${DB_VOLUME_PATH}:/data/db:Z -v $(pwd)/mongodb/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro --cpus "${DB_CPU_LIMIT}" --memory "${DB_MEMORY_LIMIT}" --network data_network --security-opt label=disable docker.io/library/mongo:6
+```
+
+Sometimes, podman gives **problems with permissions**. Typically, these problems arise from using **NFS file systems** and **non-root permissions** in podman. Therefore, to avoid these problems, an alternative execution can be performed, using a [**mongo-nonroot.sh**](../mongodb/mongo-nonroot.sh) bash script for intialising the **mongodb** docker:
+
+```sh
+podman run -d --name mongodb -e MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME} -e MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD} -e MONGO_PORT=${DB_OUTER_PORT} -e MONGO_INITDB_DATABASE=${DB_NAME} -e LOADER_DB_LOGIN=${LOADER_DB_LOGIN} -e LOADER_DB_PASSWORD=${LOADER_DB_PASSWORD} -e MONGO_VRE_DATABASE=${VRE_LITE_MONGO_DATABASE} -e VRE_DB_LOGIN=${VRE_LITE_DB_LOGIN} -e VRE_DB_PASSWORD=${VRE_LITE_DB_PASSWORD} -e REST_DB_LOGIN=${REST_DB_LOGIN} -e REST_DB_PASSWORD=${REST_DB_PASSWORD} -e DB_OUTER_PORT=${DB_OUTER_PORT} -p ${DB_OUTER_PORT}:${DB_OUTER_PORT} -v ${DB_VOLUME_PATH}:/data/db:Z -v $(pwd)/mongodb/mongo-nonroot.sh:/entrypoint.sh:Z --entrypoint /entrypoint.sh -v $(pwd)/mongodb/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro --cpus "${DB_CPU_LIMIT}" --memory "${DB_MEMORY_LIMIT}" --network data_network --security-opt label=disable docker.io/library/mongo:6
+```
+
+**IMPORTANT**
+
+In some podman implementations, the REST API gave some problems connecting to the mongo DB via service name. Therefore, in order to fix that, the **DB_SERVER** must be the **mongodb service IP**. So, for **fixing** this IP, the **--ip flag** can be added:
+
+```sh
+podman run -d --name mongodb -e MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME} -e MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD} -e MONGO_PORT=${DB_OUTER_PORT} -e MONGO_INITDB_DATABASE=${DB_NAME} -e LOADER_DB_LOGIN=${LOADER_DB_LOGIN} -e LOADER_DB_PASSWORD=${LOADER_DB_PASSWORD} -e MONGO_VRE_DATABASE=${VRE_LITE_MONGO_DATABASE} -e VRE_DB_LOGIN=${VRE_LITE_DB_LOGIN} -e VRE_DB_PASSWORD=${VRE_LITE_DB_PASSWORD} -e REST_DB_LOGIN=${REST_DB_LOGIN} -e REST_DB_PASSWORD=${REST_DB_PASSWORD} -e DB_OUTER_PORT=${DB_OUTER_PORT} -p ${DB_OUTER_PORT}:${DB_OUTER_PORT} -v ${DB_VOLUME_PATH}:/data/db:Z -v $(pwd)/mongodb/mongo-nonroot.sh:/entrypoint.sh:Z --entrypoint /entrypoint.sh -v $(pwd)/mongodb/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro --cpus "${DB_CPU_LIMIT}" --memory "${DB_MEMORY_LIMIT}" --network data_network --ip <IP ADDRESS> --security-opt label=disable docker.io/library/mongo:6
+```
+
+If the IP has been fixed, jump to the [**Build services**](#build-services) section, if not, execute the **following instruction** in order to get the **automatic IP** given to the **mongodb** service by podman:
+
+```sh
+podman inspect -f '{{.NetworkSettings.Networks.data_network.IPAddress}}' mongodb
+```
+
 ## Build services
 
 Below there are all the instructions needed for **building** all the **services**:
@@ -38,12 +68,6 @@ podman build -t rest_image --build-arg DB_SERVER=${DB_SERVER} --build-arg DB_POR
 
 ```sh
 podman build -t client_image --build-arg CLIENT_INNER_PORT=${CLIENT_INNER_PORT} ./client
-```
-
-### VRE lite
-
-```sh
-podman build -t vre_lite_image --build-arg MINIO_USER=${MINIO_USER} --build-arg MINIO_PASSWORD=${MINIO_PASSWORD} --build-arg MINIO_API_PORT=${MINIO_API_INNER_PORT} --build-arg VRE_LITE_INNER_PORT=${VRE_LITE_INNER_PORT} --build-arg VRE_LITE_BASE_URL_DEVELOPMENT=${VRE_LITE_BASE_URL_DEVELOPMENT} --build-arg VRE_LITE_BASE_URL_STAGING=${VRE_LITE_BASE_URL_STAGING} --build-arg VRE_LITE_BASE_URL_PRODUCTION=${VRE_LITE_BASE_URL_PRODUCTION} --build-arg VRE_LITE_LOG_PATH=${VRE_LITE_LOG_PATH} --build-arg VRE_LITE_MAX_FILE_SIZE=${VRE_LITE_MAX_FILE_SIZE} --build-arg VRE_LITE_TIME_DIFF=${VRE_LITE_TIME_DIFF} --build-arg VERSION=${VRE_LITE_VERSION} --build-arg MINIO_PROTOCOL=${MINIO_PROTOCOL} --build-arg MINIO_URL=${MINIO_URL} --build-arg MINIO_PORT=${APACHE_MINIO_OUTER_PORT} --build-arg NODE_NAME=${NODE} ./vre_lite
 ```
 
 ### Apache
@@ -64,31 +88,35 @@ podman build -t workflow_image --build-arg MINIO_USER=${MINIO_USER} --build-arg 
 podman build -t loader_image --build-arg DB_SERVER=${DB_SERVER} --build-arg DB_PORT=${DB_OUTER_PORT} --build-arg DB_NAME=${DB_NAME} --build-arg DB_AUTH_USER=${LOADER_DB_LOGIN} --build-arg DB_AUTH_PASSWORD=${LOADER_DB_PASSWORD} --build-arg DB_AUTHSOURCE=${DB_AUTHSOURCE} ./loader
 ```
 
-## Run services
+## Deploy MinIO and build VRE lite
 
-In this section there are the instructions needed for running the **long-running tasks**.
+### Minio
 
-### MongoDB service
-
-Typical execution:
+**Before** building **VRE lite**, deploy **MinIO** in order to get the **IP address** of this service:
 
 ```sh
-podman run -d --name mongodb -e MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME} -e MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD} -e MONGO_PORT=${DB_OUTER_PORT} -e MONGO_INITDB_DATABASE=${DB_NAME} -e LOADER_DB_LOGIN=${LOADER_DB_LOGIN} -e LOADER_DB_PASSWORD=${LOADER_DB_PASSWORD} -e REST_DB_LOGIN=${REST_DB_LOGIN} -e REST_DB_PASSWORD=${REST_DB_PASSWORD} -p ${DB_OUTER_PORT}:${DB_OUTER_PORT} -v ${DB_VOLUME_PATH}:/data/db:Z -v $(pwd)/mongodb/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro --cpus "${DB_CPU_LIMIT}" --memory "${DB_MEMORY_LIMIT}" --network data_network --security-opt label=disable docker.io/library/mongo:6
+podman run -d --name minio -e MINIO_ROOT_USER=${MINIO_ROOT_USER} -e MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD} -e MINIO_BROWSER_REDIRECT_URL=${MINIO_BROWSER_REDIRECT_URL} -e MINIO_API_INNER_PORT=${MINIO_API_INNER_PORT} -e MINIO_UI_INNER_PORT=${MINIO_UI_INNER_PORT} -e MINIO_USER=${MINIO_USER} -e MINIO_PASSWORD=${MINIO_PASSWORD} -p ${MINIO_API_OUTER_PORT}:${MINIO_API_INNER_PORT} -p ${MINIO_UI_INNER_PORT}:${MINIO_UI_INNER_PORT} -v ${MINIO_VOLUME_PATH1}:/mnt/disk1:Z -v $(pwd)/minio/init-minio.sh:/entrypoint.sh --cpus "${MINIO_CPU_LIMIT}" --memory "${MINIO_MEMORY_LIMIT}" --network minio_network --network web_network --hostname minio --entrypoint /entrypoint.sh --healthcheck-command "curl -f http://localhost:${MINIO_API_INNER_PORT}/minio/health/live" --healthcheck-interval 10s --healthcheck-timeout 2s --healthcheck-retries 5 docker.io/minio/minio:latest
 ```
 
-Sometimes, podman gives **problems with permissions**. Typically, these problems arise from using **NFS file systems** and **non-root permissions** in podman. Therefore, to avoid these problems, an alternative execution can be performed, using a [**mongo-nonroot.sh**](../mongodb/mongo-nonroot.sh) bash script for intialising the **mongodb** docker:
-
-```sh
-podman run -d --name mongodb -e MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME} -e MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD} -e MONGO_PORT=${DB_OUTER_PORT} -e MONGO_INITDB_DATABASE=${DB_NAME} -e LOADER_DB_LOGIN=${LOADER_DB_LOGIN} -e LOADER_DB_PASSWORD=${LOADER_DB_PASSWORD} -e REST_DB_LOGIN=${REST_DB_LOGIN} -e REST_DB_PASSWORD=${REST_DB_PASSWORD} -e DB_OUTER_PORT=${DB_OUTER_PORT} -p ${DB_OUTER_PORT}:${DB_OUTER_PORT} -v ${DB_VOLUME_PATH}:/data/db:Z -v $(pwd)/mongodb/mongo-nonroot.sh:/entrypoint.sh:Z --entrypoint /entrypoint.sh -v $(pwd)/mongodb/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro --cpus "${DB_CPU_LIMIT}" --memory "${DB_MEMORY_LIMIT}" --network data_network --security-opt label=disable docker.io/library/mongo:6
-```
+### VRE lite
 
 **IMPORTANT**
 
-In some podman implementations, the REST API gave some problems connecting to the mongo DB via service name. Therefore, in order to fix that, the **DB_SERVER** must be the **mongodb service IP**. So, for **fixing** this IP, the **--ip flag** can be added:
+In some podman implementations, the VRE lite gave some problems connecting to the minio service via service name. Therefore, in order to fix that, edit the [**Dockerfile**](./vre_lite/Dockerfile) and modify _http://minio_ by _http://MINIO_IP_. Where **MINIO_IP** is got executing the following instruction:
 
 ```sh
-podman run -d --name mongodb -e MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME} -e MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD} -e MONGO_PORT=${DB_OUTER_PORT} -e MONGO_INITDB_DATABASE=${DB_NAME} -e LOADER_DB_LOGIN=${LOADER_DB_LOGIN} -e LOADER_DB_PASSWORD=${LOADER_DB_PASSWORD} -e REST_DB_LOGIN=${REST_DB_LOGIN} -e REST_DB_PASSWORD=${REST_DB_PASSWORD} -e DB_OUTER_PORT=${DB_OUTER_PORT} -p ${DB_OUTER_PORT}:${DB_OUTER_PORT} -v ${DB_VOLUME_PATH}:/data/db:Z -v $(pwd)/mongodb/mongo-nonroot.sh:/entrypoint.sh:Z --entrypoint /entrypoint.sh -v $(pwd)/mongodb/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro --cpus "${DB_CPU_LIMIT}" --memory "${DB_MEMORY_LIMIT}" --network data_network --ip <IP ADDRESS> --security-opt label=disable docker.io/library/mongo:6
+podman inspect -f '{{.NetworkSettings.Networks.minio_network.IPAddress}}' minio
 ```
+
+After that, build the vre_lite service:
+
+```sh
+podman build -t vre_lite_image --build-arg MINIO_USER=${MINIO_USER} --build-arg MINIO_PASSWORD=${MINIO_PASSWORD} --build-arg MINIO_API_PORT=${MINIO_API_INNER_PORT} --build-arg VRE_LITE_INNER_PORT=${VRE_LITE_INNER_PORT} --build-arg VRE_LITE_BASE_URL_DEVELOPMENT=${VRE_LITE_BASE_URL_DEVELOPMENT} --build-arg VRE_LITE_BASE_URL_STAGING=${VRE_LITE_BASE_URL_STAGING} --build-arg VRE_LITE_BASE_URL_PRODUCTION=${VRE_LITE_BASE_URL_PRODUCTION} --build-arg VRE_LITE_LOG_PATH=${VRE_LITE_LOG_PATH} --build-arg VRE_LITE_MAX_FILE_SIZE=${VRE_LITE_MAX_FILE_SIZE} --build-arg VRE_LITE_TIME_DIFF=${VRE_LITE_TIME_DIFF} --build-arg VERSION=${VRE_LITE_VERSION} --build-arg MINIO_PROTOCOL=${MINIO_PROTOCOL} --build-arg MINIO_URL=${MINIO_URL} --build-arg MINIO_PORT=${APACHE_MINIO_OUTER_PORT} --build-arg NODE_NAME=${NODE} --build-arg DB_USER=${VRE_LITE_DB_LOGIN} --build-arg DB_PASS=${VRE_LITE_DB_PASSWORD} --build-arg DB_SERVER=${VRE_LITE_DB_SERVER} --build-arg DB_PORT=${VRE_LITE_DB_OUTER_PORT} --build-arg DB_NAME=${VRE_LITE_MONGO_DATABASE} --build-arg PAT=${GH_PAT} ./vre_lite
+```
+
+## Run services
+
+In this section there are the instructions needed for running the **long-running tasks**.
 
 ### MongoDB backup service
 
@@ -106,16 +134,24 @@ podman run -d --name rest -p ${REST_OUTER_PORT}:${REST_INNER_PORT} --cpus "${RES
 podman run -d --name client -p ${CLIENT_OUTER_PORT}:${CLIENT_INNER_PORT} --cpus "${CLIENT_CPU_LIMIT}" --memory "${CLIENT_MEMORY_LIMIT}" --network web_network client_image
 ```
 
-### Minio
-
-```sh
-podman run -d --name minio -e MINIO_ROOT_USER=${MINIO_ROOT_USER} -e MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD} -e MINIO_BROWSER_REDIRECT_URL=${MINIO_BROWSER_REDIRECT_URL} -e MINIO_API_INNER_PORT=${MINIO_API_INNER_PORT} -e MINIO_UI_INNER_PORT=${MINIO_UI_INNER_PORT} -e MINIO_USER=${MINIO_USER} -e MINIO_PASSWORD=${MINIO_PASSWORD} -p ${MINIO_API_OUTER_PORT}:${MINIO_API_INNER_PORT} -p ${MINIO_UI_INNER_PORT}:${MINIO_UI_INNER_PORT} -v ${MINIO_VOLUME_PATH1}:/mnt/disk1:Z -v $(pwd)/minio/init-minio.sh:/entrypoint.sh --cpus "${MINIO_CPU_LIMIT}" --memory "${MINIO_MEMORY_LIMIT}" --network minio_network --network web_network --hostname minio --entrypoint /entrypoint.sh --healthcheck-command "curl -f http://localhost:${MINIO_API_INNER_PORT}/minio/health/live" --healthcheck-interval 10s --healthcheck-timeout 2s --healthcheck-retries 5 docker.io/minio/minio:latest
-```
-
 ### VRE lite
 
+Before launching VRE lite, please be sure that **Podman socket** is initialised:
+
 ```sh
-podman run -d --name vre_lite -p ${VRE_LITE_OUTER_PORT}:${VRE_LITE_INNER_PORT} -v ${VRE_LITE_VOLUME_PATH}:/vre_lite:Z --cpus "${MINIO_CPU_LIMIT}" --memory "${MINIO_MEMORY_LIMIT}" --network minio_network --network web_network vre_lite_image
+$ systemctl --user status podman.socket
+```
+
+If the socket is **not running** (ie it says Active: inactive (dead)), you need to **start it**:
+
+```sh
+systemctl --user start podman.socket 
+```
+
+After that, **launch** the **vre_lite** service:
+
+```sh
+podman run -d --name vre_lite -p ${VRE_LITE_OUTER_PORT}:${VRE_LITE_INNER_PORT} -v ${VRE_LITE_VOLUME_PATH}:/vre_lite:Z -v /run/user/$(id -u)/podman/podman.sock:/var/run/docker.sock --cpus "${MINIO_CPU_LIMIT}" --memory "${MINIO_MEMORY_LIMIT}" --network minio_network --network web_network --network data_network vre_lite_image
 ```
 
 ### Apache
@@ -280,13 +316,13 @@ Check that at least the mongo, rest and client containers are up & running:
 
 ```sh
 $ podman ps -a
-CONTAINER ID  IMAGE                            COMMAND               CREATED      STATUS                PORTS                                                             NAMES
-<ID>          docker.io/library/mongo:6        mongod                7 hours ago  Up 7 hours            0.0.0.0:27017->27017/tcp                                          mongodb
-<ID>          localhost/rest_image:latest      pm2-runtime start...  7 hours ago  Up 7 hours            0.0.0.0:8081->3000/tcp                                            rest
-<ID>          localhost/client_image:latest    nginx -g daemon o...  7 hours ago  Up 7 hours            0.0.0.0:8080->80/tcp                                              client
-<ID>          docker.io/minio/minio:latest     server --address ...  7 hours ago  Up 7 hours (healthy)  0.0.0.0:9001-9002->9001-9002/tcp                                  minio
-<ID>          localhost/vre_lite_image:latest                        7 hours ago  Up 7 hours            0.0.0.0:8082->3001/tcp                                            vre_lite
-<ID>          localhost/apache_image:latest    httpd-foreground      7 hours ago  Up 7 hours            0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp, 0.0.0.0:9000->9000/tcp  apache
+CONTAINER ID  IMAGE                            COMMAND               CREATED         STATUS                PORTS                                                           NAMES
+<ID>          docker.io/library/mongo:6                              2 hours ago     Up 2 hours            0.0.0.0:27017->27017/tcp                                        mongodb
+<ID>          localhost/client_image:latest    nginx -g daemon o...  2 hours ago     Up 2 hours            0.0.0.0:8080->80/tcp                                            client
+<ID>          docker.io/minio/minio:latest                           2 hours ago     Up 2 hours (healthy)  0.0.0.0:9001-9002->9001-9002/tcp                                minio
+<ID>          localhost/apache_image:latest    httpd-foreground      2 hours ago     Up 2 hours            0.0.0.0:21402->21402/tcp, 0.0.0.0:21411-21412->21411-21412/tcp  apache
+<ID>          localhost/rest_image:latest      pm2-runtime start...  58 minutes ago  Up 58 minutes         0.0.0.0:8081->3000/tcp                                          rest
+<ID>          localhost/vre_lite_image:latest                        3 seconds ago   Up 4 seconds          0.0.0.0:8082->3001/tcp                                          vre_lite
 ```
 
 ### Podman Stats
