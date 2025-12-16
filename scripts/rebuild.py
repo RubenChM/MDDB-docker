@@ -177,7 +177,7 @@ def main():
 
                 # Run version_tracker.py to update the version in the database
                 v = get_podman_script('run', 'utils', service, version)
-                run_command(v)
+                run_command_p(v)
             except subprocess.CalledProcessError as e:
                 print(f"Failed to get version for {service}: {e.stderr}")
 
