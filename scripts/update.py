@@ -110,7 +110,7 @@ class VersionChecker:
         podman = self.command_exists(['podman', 'version'])
         # Use the exact command from the prompt
         if podman:
-            command = f'podman run --rm {image_name} sh -c "cat /app/version.txt"'
+            command = f'podman run --entrypoint "" --rm {image_name} sh -c "cat /app/version.txt"'
         else:
             command = f'docker run --entrypoint "" --rm {image_name} sh -c "cat /app/version.txt"'
 
