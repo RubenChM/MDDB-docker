@@ -165,6 +165,22 @@ def main():
             r = get_podman_script('run', service)
             run_command_p(r)
 
+        # Update services
+        for service in all_services:
+            # Get version of the service
+            version_command = ['podman', 'run', '--entrypoint', '', '--rm', f'{service}_image', 'sh', '-c', 'cat /app/version.txt']
+            # Get result of version command
+            try:
+                result = subprocess.run(version_command, capture_output=True, text=True, check=True)
+                version = result.stdout.strip()
+                print(f"Version for {service}: {version}")
+
+                # Run version_tracker.py to update the version in the database
+                v = get_podman_script('run', service, version)
+                run_command(v)
+            except subprocess.CalledProcessError as e:
+                print(f"Failed to get version for {service}: {e.stderr}")
+
 
 if __name__ == '__main__':
     main()
