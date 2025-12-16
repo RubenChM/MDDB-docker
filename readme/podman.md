@@ -235,7 +235,7 @@ podman run --rm --name loader --cpus "${LOADER_CPU_LIMIT}" --memory "${LOADER_ME
 ### Use Utils
 
 ```sh
-podman run --rm -e DB_SERVER=${VRE_LITE_DB_SERVER} -e DB_PORT=${VRE_LITE_DB_OUTER_PORT} -e DB_VRE_NAME=${VRE_LITE_MONGO_DATABASE} -e DB_VRE_AUTH_USER=${VRE_LITE_DB_LOGIN} -e DB_VRE_AUTH_PASSWORD=${VRE_LITE_DB_PASSWORD} -e DB_VRE_AUTHSOURCE=${VRE_LITE_MONGO_DATABASE} --cpus "${UTILS_CPU_LIMIT}" --memory "${UTILS_MEMORY_LIMIT}" --network data_network utils_image
+podman run --rm --name utils -e DB_SERVER=${VRE_LITE_DB_SERVER} -e DB_PORT=${VRE_LITE_DB_OUTER_PORT} -e DB_VRE_NAME=${VRE_LITE_MONGO_DATABASE} -e DB_VRE_AUTH_USER=${VRE_LITE_DB_LOGIN} -e DB_VRE_AUTH_PASSWORD=${VRE_LITE_DB_PASSWORD} -e DB_VRE_AUTHSOURCE=${VRE_LITE_MONGO_DATABASE} --cpus "${UTILS_CPU_LIMIT}" --memory "${UTILS_MEMORY_LIMIT}" --network data_network utils_image version_tracker.py -h
 ```
 
 ### Check rest

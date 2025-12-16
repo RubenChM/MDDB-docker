@@ -24,7 +24,7 @@ class VersionChecker:
         self.service_versions = {}
         self.repo_versions = {}
 
-    def command_exists(cmd):
+    def command_exists(self, cmd):
         try:
             subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
             return True
