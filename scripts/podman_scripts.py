@@ -1,7 +1,7 @@
 import os
 
 
-def get_podman_script(type, service, version=None):
+def get_podman_script(type, service, svc=None, version=None):
     cmd = ''
     if service == 'rest':
         if type == 'build':
@@ -47,7 +47,7 @@ def get_podman_script(type, service, version=None):
         if type == 'build':
             cmd = "podman build -t utils_image --no-cache ./utils"
         elif type == 'run':
-            cmd = "podman run --rm --name utils -e DB_SERVER=${VRE_LITE_DB_SERVER} -e DB_PORT=${VRE_LITE_DB_OUTER_PORT} -e DB_VRE_NAME=${VRE_LITE_MONGO_DATABASE} -e DB_VRE_AUTH_USER=${VRE_LITE_DB_LOGIN} -e DB_VRE_AUTH_PASSWORD=${VRE_LITE_DB_PASSWORD} -e DB_VRE_AUTHSOURCE=${VRE_LITE_MONGO_DATABASE} --cpus ${UTILS_CPU_LIMIT} --memory ${UTILS_MEMORY_LIMIT} --network data_network utils_image version_tracker.py {service} {version}"
+            cmd = "podman run --rm --name utils -e DB_SERVER=${VRE_LITE_DB_SERVER} -e DB_PORT=${VRE_LITE_DB_OUTER_PORT} -e DB_VRE_NAME=${VRE_LITE_MONGO_DATABASE} -e DB_VRE_AUTH_USER=${VRE_LITE_DB_LOGIN} -e DB_VRE_AUTH_PASSWORD=${VRE_LITE_DB_PASSWORD} -e DB_VRE_AUTHSOURCE=${VRE_LITE_MONGO_DATABASE} --cpus ${UTILS_CPU_LIMIT} --memory ${UTILS_MEMORY_LIMIT} --network data_network utils_image version_tracker.py {svc} {version}"
 
     cmd = os.path.expandvars(cmd)
     return cmd
