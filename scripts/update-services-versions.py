@@ -71,7 +71,8 @@ def update_version_tracker(service, version, podman=False):
                       'utils_image', 'version_tracker.py', service, version]
     else:
         dc_command = docker_compose_script()
-    dc_command.extend(['run', '--rm', 'utils', 'version_tracker.py', service, version])
+        dc_command.extend(['run', '--rm', 'utils', 'version_tracker.py', service, version])
+
     print(f"📝 Updating version tracker for {service} v{version}...")
 
     output, success = run_command(dc_command, f"update version tracker for {service}")
