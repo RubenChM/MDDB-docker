@@ -24,6 +24,15 @@ class VersionChecker:
         self.service_versions = {}
         self.repo_versions = {}
 
+    def command_exists(cmd):
+        try:
+            subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
+            return True
+        except subprocess.CalledProcessError:
+            return False
+        except FileNotFoundError:
+            return False
+
     def run_command(self, command: List[str], shell: bool = False, stream_output: bool = False) -> Tuple[bool, str]:
         """Run a command and return success status and output."""
         try:
@@ -97,8 +106,13 @@ class VersionChecker:
         """Get version from Docker service's version.txt file."""
         print(f"  🐳 Checking Docker service version for {service_name}...")
 
+        # Check if Podman is available, otherwise use Docker
+        podman = self.command_exists(['podman', 'version'])
         # Use the exact command from the prompt
-        command = f'docker run --entrypoint "" --rm {image_name} sh -c "cat /app/version.txt"'
+        if podman:
+            command = f'podman run --rm {image_name} sh -c "cat /app/version.txt"'
+        else:
+            command = f'docker run --entrypoint "" --rm {image_name} sh -c "cat /app/version.txt"'
 
         success, output = self.run_command(command, shell=True, stream_output=False)
 
