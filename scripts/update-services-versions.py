@@ -2,6 +2,7 @@
 
 import subprocess
 import sys
+import os
 
 
 def run_command(command, description=""):
@@ -41,7 +42,7 @@ def docker_compose_script():
 def get_service_version(service, podman=False):
     """Get version from service image."""
     if podman:
-        version_command = ['podman', 'run', '--rm', f'{service}_image', 'sh', '-c', 'cat /app/version.txt']
+        version_command = ['podman', 'run', '--entrypoint', '', '--rm', f'{service}_image', 'sh', '-c', 'cat /app/version.txt']
     else:
         version_command = ['docker', 'run', '--entrypoint', '', '--rm', f'{service}_image', 'sh', '-c', 'cat /app/version.txt']
     print(f"🔍 Getting version for {service}...")
@@ -56,7 +57,18 @@ def get_service_version(service, podman=False):
 def update_version_tracker(service, version, podman=False):
     """Update version tracker with service version."""
     if podman:
-        dc_command = ['podman', 'run', '--rm', 'utils_image', 'version_tracker.py', service, version]
+        dc_command = ['podman', 'run', '--rm',
+                      '--name', 'utils',
+                      '-e', f"DB_SERVER={os.getenv('VRE_LITE_DB_SERVER')}",
+                      '-e', f"DB_PORT={os.getenv('VRE_LITE_DB_OUTER_PORT')}",
+                      '-e', f"DB_VRE_NAME={os.getenv('VRE_LITE_MONGO_DATABASE')}",
+                      '-e', f"DB_VRE_AUTH_USER={os.getenv('VRE_LITE_DB_LOGIN')}",
+                      '-e', f"DB_VRE_AUTH_PASSWORD={os.getenv('VRE_LITE_DB_PASSWORD')}",
+                      '-e', f"DB_VRE_AUTHSOURCE={os.getenv('VRE_LITE_MONGO_DATABASE')}",
+                      '--cpus', os.getenv('UTILS_CPU_LIMIT', '1.00'),
+                      '--memory', os.getenv('UTILS_MEMORY_LIMIT', '1G'),
+                      '--network', 'data_network',
+                      'utils_image', 'version_tracker.py', service, version]
     else:
         dc_command = docker_compose_script()
     dc_command.extend(['run', '--rm', 'utils', 'version_tracker.py', service, version])

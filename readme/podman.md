@@ -88,6 +88,12 @@ podman build -t workflow_image --build-arg MINIO_USER=${MINIO_USER} --build-arg 
 podman build -t loader_image --build-arg DB_SERVER=${DB_SERVER} --build-arg DB_PORT=${DB_OUTER_PORT} --build-arg DB_NAME=${DB_NAME} --build-arg DB_AUTH_USER=${LOADER_DB_LOGIN} --build-arg DB_AUTH_PASSWORD=${LOADER_DB_PASSWORD} --build-arg DB_AUTHSOURCE=${DB_AUTHSOURCE} ./loader
 ```
 
+### Utils
+
+```sh
+podman build -t utils_image ./utils
+```
+
 ## Deploy MinIO and build VRE lite
 
 ### Minio
@@ -224,6 +230,12 @@ Take into account that **OUTPUT_FOLDER** must be inside **WORKFLOW_VOLUME_PATH**
 
 ```sh
 podman run --rm --name loader --cpus "${LOADER_CPU_LIMIT}" --memory "${LOADER_MEMORY_LIMIT}" --network data_network loader_image delete <project_id>
+```
+
+### Use Utils
+
+```sh
+podman run --rm -e DB_SERVER=${VRE_LITE_DB_SERVER} -e DB_PORT=${VRE_LITE_DB_OUTER_PORT} -e DB_VRE_NAME=${VRE_LITE_MONGO_DATABASE} -e DB_VRE_AUTH_USER=${VRE_LITE_DB_LOGIN} -e DB_VRE_AUTH_PASSWORD=${VRE_LITE_DB_PASSWORD} -e DB_VRE_AUTHSOURCE=${VRE_LITE_MONGO_DATABASE} --cpus "${UTILS_CPU_LIMIT}" --memory "${UTILS_MEMORY_LIMIT}" --network data_network utils_image
 ```
 
 ### Check rest
