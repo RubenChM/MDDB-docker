@@ -42,11 +42,13 @@ podman run -d --name mongodb -e MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_U
 
 **IMPORTANT**
 
-In some podman implementations, the REST API gave some problems connecting to the mongo DB via service name. Therefore, in order to fix that, the **DB_SERVER** must be the **mongodb service IP**. So, for **fixing** this IP, the **--ip flag** can be added:
+In some podman implementations, the REST API gave some problems connecting to the mongo DB via service name. Therefore, in order to fix that, the **DB_SERVER** must be the **mongodb service IP**. So, for **setting this IP beforehand**, the **--ip flag** can be added:
 
 ```sh
 podman run -d --name mongodb -e MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME} -e MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD} -e MONGO_PORT=${DB_OUTER_PORT} -e MONGO_INITDB_DATABASE=${DB_NAME} -e LOADER_DB_LOGIN=${LOADER_DB_LOGIN} -e LOADER_DB_PASSWORD=${LOADER_DB_PASSWORD} -e MONGO_VRE_DATABASE=${VRE_LITE_MONGO_DATABASE} -e VRE_DB_LOGIN=${VRE_LITE_DB_LOGIN} -e VRE_DB_PASSWORD=${VRE_LITE_DB_PASSWORD} -e REST_DB_LOGIN=${REST_DB_LOGIN} -e REST_DB_PASSWORD=${REST_DB_PASSWORD} -e DB_OUTER_PORT=${DB_OUTER_PORT} -p ${DB_OUTER_PORT}:${DB_OUTER_PORT} -v ${DB_VOLUME_PATH}:/data/db:Z -v $(pwd)/mongodb/mongo-nonroot.sh:/entrypoint.sh:Z --entrypoint /entrypoint.sh -v $(pwd)/mongodb/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro --cpus "${DB_CPU_LIMIT}" --memory "${DB_MEMORY_LIMIT}" --network data_network --ip <IP ADDRESS> --security-opt label=disable docker.io/library/mongo:6
 ```
+
+Take into account that, in some infrastructures, the **IP** must belong to a **range** in order to work properly. So it's **highly recommended** to use the implementation **without the IP fixed** and let Podman to assign them automatically.
 
 If the IP has been fixed, jump to the [**Build services**](#build-services) section, if not, execute the **following instruction** in order to get the **automatic IP** given to the **mongodb** service by podman:
 
