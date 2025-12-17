@@ -19,16 +19,6 @@ def run_command_p(command):
         print(f"Command '{command}' failed with return code {e.returncode}")
 
 
-# def command_exists(cmd):
-#     try:
-#         subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
-#         return True
-#     except subprocess.CalledProcessError:
-#         return False
-#     except FileNotFoundError:
-#         return False
-
-
 def command_exists(cmd):
     try:
         subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)

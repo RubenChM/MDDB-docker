@@ -126,7 +126,11 @@ In this section there are the instructions needed for running the **long-running
 
 ### MongoDB backup service
 
-TODO
+Take into account that this script performs a mongodump. So, if your database is large, please explore other options for doing backups of it.
+
+```sh
+podman run -d --name mongo-backup -e MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME} -e MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD} -e MONGO_PORT=${DB_OUTER_PORT} -e MONGO_INITDB_DATABASE=${DB_AUTHSOURCE} -e DB_HOST=${DB_SERVER} -e BACKUP_DIR=/backup -e RETENTION_COUNT=${DB_BACKUP_RETENTION_COUNT} -e BACKUP_INTERVAL=${DB_BACKUP_INTERVAL} -v ${DB_BACKUP_VOLUME_PATH}:/backup:Z -v $(pwd)/mongodb/backup_script.sh:/backup_script.sh:ro --cpus "${DB_BACKUP_CPU_LIMIT}" --memory "${DB_BACKUP_MEMORY_LIMIT}" --network data_network --security-opt label=disable docker.io/library/mongo:6 bash -c "sh /backup_script.sh"
+```
 
 ### REST API
 
@@ -335,6 +339,7 @@ CONTAINER ID  IMAGE                            COMMAND               CREATED    
 <ID>          localhost/apache_image:latest    httpd-foreground      2 hours ago     Up 2 hours            0.0.0.0:21402->21402/tcp, 0.0.0.0:21411-21412->21411-21412/tcp  apache
 <ID>          localhost/rest_image:latest      pm2-runtime start...  58 minutes ago  Up 58 minutes         0.0.0.0:8081->3000/tcp                                          rest
 <ID>          localhost/vre_lite_image:latest                        3 seconds ago   Up 4 seconds          0.0.0.0:8082->3001/tcp                                          vre_lite
+<ID>          docker.io/library/mongo:6        bash -c sh /backu...  3 minutes ago   Up 3 minutes                                                                          mongo-backup
 ```
 
 ### Podman Stats

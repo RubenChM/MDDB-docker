@@ -30,12 +30,16 @@ def command_exists(cmd):
 
 
 def docker_compose_script():
-    if command_exists(['docker-compose', 'version']):
-        return ['docker-compose']
-    elif command_exists(['docker', 'compose', 'version']):
+    """Determine which docker compose command is available."""
+    # Try 'docker compose' (newer plugin version)
+    if command_exists(['docker', 'compose', 'version']):
         return ['docker', 'compose']
+    # Try 'docker-compose' (standalone binary)
+    elif command_exists(['docker-compose', 'version']):
+        return ['docker-compose']
     else:
-        print("Error: Neither 'docker-compose' nor 'docker compose' commands are available.")
+        print("❌ Error: Neither 'docker compose' nor 'docker-compose' commands are available.")
+        print("   Please install Docker Compose: https://docs.docker.com/compose/install/")
         sys.exit(1)
 
 
@@ -111,6 +115,20 @@ def main():
 
         r = get_podman_script('run', args.service)
         run_command_p(r)
+
+        # Get version of the service
+        version_command = ['podman', 'run', '--entrypoint', '', '--rm', f'{args.service}_image', 'sh', '-c', 'cat /app/version.txt']
+        # Get result of version command
+        try:
+            result = subprocess.run(version_command, capture_output=True, text=True, check=True)
+            version = result.stdout.strip()
+            print(f"Version for {args.service}: {version}")
+
+            # Run version_tracker.py to update the version in the database
+            v = get_podman_script('run', 'utils', args.service, version)
+            run_command_p(v)
+        except subprocess.CalledProcessError as e:
+            print(f"Failed to get version for {args.service}: {e.stderr}")
 
 
 if __name__ == '__main__':
