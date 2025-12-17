@@ -111,6 +111,7 @@ def main():
         if args.service != 'mongodb':
             subprocess.run(f"podman stop {args.service} || true && podman rm {args.service} || true", shell=True, check=True, executable='/bin/bash')
         b = get_podman_script('build', args.service)
+        b = b.replace("--no-cache", f"--build-arg VERSION={args.version} --no-cache")
         run_command_p(b)
 
         r = get_podman_script('run', args.service)
