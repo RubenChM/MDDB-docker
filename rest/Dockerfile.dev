@@ -14,7 +14,7 @@ WORKDIR /app
 
 # Copy and install the customized chemfiles to support '.bin' format reading and streaming.
 COPY chemfiles.tar.gz /app/chemfiles.tar.gz
-RUN tar -xvzf chemfiles.tar.gz && cd build && make install
+RUN tar -xvzf chemfiles.tar.gz && cd chemfiles/build && make install
 
 # Verify installation
 RUN node --version && npm --version && git --version
