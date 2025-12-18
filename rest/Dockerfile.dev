@@ -7,14 +7,18 @@ RUN apk add build-base
 RUN apk add cmake
 
 # Define working dir
-WORKDIR /app
+WORKDIR /data
 
 # Clone and install the chemfiles fork customized to support '.bin' format reading and streaming.
 # RUN git clone https://github.com/d-beltran/chemfiles --depth 1 && cd chemfiles && git fetch --unshallow  && mkdir build && cd build && cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 .. && make && make install
 
 # Copy and install the customized chemfiles to support '.bin' format reading and streaming.
+# TODO AGAIN INSIDE THE /app FOLDER, NOW ERROR BECAUSE IT EXPECTS /data
 COPY chemfiles.tar.gz /app/chemfiles.tar.gz
-RUN tar -xvzf chemfiles.tar.gz && cd chemfiles/build && make install
+RUN tar -xvzf chemfiles.tar.gz && cd chemfiles/build && make && make install
+
+# Define working dir
+WORKDIR /app
 
 # Verify installation
 RUN node --version && npm --version && git --version
