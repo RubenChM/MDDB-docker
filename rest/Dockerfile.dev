@@ -3,7 +3,7 @@ FROM docker.io/library/nginx:alpine AS build
 
 # Install necessary packages
 RUN apk --no-cache add nodejs npm git curl
-# RUN apk add build-base
+RUN apk add build-base
 # RUN apk add cmake
 
 # Define working dir
