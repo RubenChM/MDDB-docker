@@ -211,6 +211,18 @@ Or, if the above doesn't work:
 docker run --rm --network data_network --cpus "${LOADER_CPU_LIMIT}" --memory "${LOADER_MEMORY_LIMIT}" loader_image delete <project_id>
 ```
 
+### MongoDB backup service
+
+The MongoDB backup service performs a complete database backup every so often depending on a variable defined by the user (${DB_BACKUP_INTERVAL} seconds). To disable this service, define **DB_BACKUP_REPLICAS** to 0. This operation is only recommended for small databases, so if your database is large, please explore other options for doing backups of it.
+
+For performing a **single mongodump**, please execute:
+
+```sh
+docker run --rm --name mongo-dump -e MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME} -e MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD} -e MONGO_PORT=${DB_OUTER_PORT} -e MONGO_INITDB_DATABASE=${DB_AUTHSOURCE} -e DB_HOST=${DB_SERVER} -e BACKUP_DIR=/backup -v ${DB_BACKUP_VOLUME_PATH}:/backup -v $(pwd)/mongodb/mongodump_script.sh:/mongodump_script.sh:ro --cpus "${DB_BACKUP_CPU_LIMIT}" --memory "${DB_BACKUP_MEMORY_LIMIT}" --network data_network --security-opt label=disable mongo:latest bash -c "sh /mongodump_script.sh"
+```
+
+> NOTE: Depending of the size of the database, this operation can take hours, days and even weeks.
+
 ### Check rest
 
 Open a browser and type:
