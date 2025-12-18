@@ -13,7 +13,6 @@ WORKDIR /data
 # RUN git clone https://github.com/d-beltran/chemfiles --depth 1 && cd chemfiles && git fetch --unshallow  && mkdir build && cd build && cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 .. && make && make install
 
 # Copy and install the customized chemfiles to support '.bin' format reading and streaming.
-# TODO AGAIN INSIDE THE /app FOLDER, NOW ERROR BECAUSE IT EXPECTS /data
 COPY chemfiles.tar.gz /data/chemfiles.tar.gz
 RUN tar -xvzf chemfiles.tar.gz && cd chemfiles/build && make && make install
 

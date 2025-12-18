@@ -128,10 +128,16 @@ In this section there are the instructions needed for running the **long-running
 
 ### MongoDB backup service
 
-Take into account that this script performs a mongodump. So, if your database is large, please explore other options for doing backups of it.
+Take into account that this script performs a mongodump **every ${DB_BACKUP_INTERVAL} seconds**. So, if your database is large, please explore other options for doing backups of it.
 
 ```sh
 podman run -d --name mongo-backup -e MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME} -e MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD} -e MONGO_PORT=${DB_OUTER_PORT} -e MONGO_INITDB_DATABASE=${DB_AUTHSOURCE} -e DB_HOST=${DB_SERVER} -e BACKUP_DIR=/backup -e RETENTION_COUNT=${DB_BACKUP_RETENTION_COUNT} -e BACKUP_INTERVAL=${DB_BACKUP_INTERVAL} -v ${DB_BACKUP_VOLUME_PATH}:/backup:Z -v $(pwd)/mongodb/backup_script.sh:/backup_script.sh:ro --cpus "${DB_BACKUP_CPU_LIMIT}" --memory "${DB_BACKUP_MEMORY_LIMIT}" --network data_network --security-opt label=disable docker.io/library/mongo:6 bash -c "sh /backup_script.sh"
+```
+
+For performing a **single mongodump**, please execute:
+
+```sh
+podman run -d --name mongo-dump -e MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME} -e MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD} -e MONGO_PORT=${DB_OUTER_PORT} -e MONGO_INITDB_DATABASE=${DB_AUTHSOURCE} -e DB_HOST=${DB_SERVER} -e BACKUP_DIR=/backup -v ${DB_BACKUP_VOLUME_PATH}:/backup:Z -v $(pwd)/mongodb/mongodump_script.sh:/mongodump_script.sh:ro --cpus "${DB_BACKUP_CPU_LIMIT}" --memory "${DB_BACKUP_MEMORY_LIMIT}" --network data_network --security-opt label=disable docker.io/library/mongo:6 bash -c "sh /mongodump_script.sh"
 ```
 
 ### REST API
