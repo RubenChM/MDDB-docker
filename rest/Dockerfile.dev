@@ -3,14 +3,14 @@ FROM docker.io/library/nginx:alpine AS build
 
 # Install necessary packages
 RUN apk --no-cache add nodejs npm git curl
-RUN apk add build-base
-RUN apk add cmake
+# RUN apk add build-base
+# RUN apk add cmake
 
 # Define working dir
 WORKDIR /app
 
 # Clone and install the chemfiles fork customized to support '.bin' format reading and streaming.
-RUN git clone https://github.com/d-beltran/chemfiles --depth 1 && cd chemfiles && git fetch --unshallow  && mkdir build && cd build && cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 .. && make && make install
+# RUN git clone https://github.com/d-beltran/chemfiles --depth 1 && cd chemfiles && git fetch --unshallow  && mkdir build && cd build && cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 .. && make && make install
 
 # Verify installation
 RUN node --version && npm --version && git --version
@@ -54,6 +54,8 @@ FROM docker.io/library/nginx:alpine
 
 # Install necessary packages
 RUN apk --no-cache add nodejs npm curl
+# RUN apk add build-base
+RUN apk add cmake
 
 # Install pm2
 RUN npm install pm2 -g
@@ -63,8 +65,12 @@ WORKDIR /app
 
 # Copy from the previous stage
 COPY --from=build /app/MDDB-REST-API /app/MDDB-REST-API
-COPY --from=build /app/chemfiles /app/chemfiles
+# COPY --from=build /app/chemfiles /app/chemfiles
 COPY --from=build /app/version.txt /app/version.txt
+
+# Copy and install the customized chemfiles to support '.bin' format reading and streaming.
+COPY chemfiles.tar.gz /app/chemfiles.tar.gz
+RUN tar -xvzf chemfiles.tar.gz && cd build && make install
 
 # Change working directory to /app/MDDB-REST-API
 WORKDIR /app/MDDB-REST-API
