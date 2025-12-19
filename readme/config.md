@@ -67,6 +67,7 @@ An `.env` file must be created in the **root** of the project. The file [**.env.
 | REST_MEMORY_RESERVATION    | string  | REST reserved memory                               |
 | REST_DB_LOGIN    | string  | db user for website REST API                               |
 | REST_DB_PASSWORD    | string  | db password for website REST API                               |
+| REST_URL    | string  | URL of the node (ie mdposit.mddbr.eu)                               |
 | &nbsp;
 | DB_VOLUME_PATH         | string  | path where the DB will deploy the mongoDB file system                                        |
 | DB_REPLICAS      | number  | number of replicas to deploy                                    |

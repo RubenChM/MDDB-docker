@@ -132,6 +132,7 @@ services:
         DB_AUTH_PASSWORD: ${REST_DB_PASSWORD}
         DB_AUTHSOURCE: ${DB_AUTHSOURCE}
         REST_INNER_PORT: ${REST_INNER_PORT}
+        HOST: ${REST_URL}
     depends_on:
       - mongodb
     ports:

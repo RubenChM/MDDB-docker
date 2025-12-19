@@ -7,10 +7,14 @@ RUN apk add build-base
 RUN apk add cmake
 
 # Define working dir
-WORKDIR /app
+WORKDIR /data
 
-# Clone and install the chemfiles fork customized to support '.bin' format reading and streaming.
-RUN git clone https://github.com/d-beltran/chemfiles --depth 1 && cd chemfiles && git fetch --unshallow  && mkdir build && cd build && cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 .. && make && make install
+# Copy and install the customized chemfiles to support '.bin' format reading and streaming.
+COPY chemfiles.tar.gz /data/chemfiles.tar.gz
+RUN tar -xvzf chemfiles.tar.gz && cd chemfiles/build && make && make install
+
+# Define working dir
+WORKDIR /app
 
 # Verify installation
 RUN node --version && npm --version && git --version
@@ -47,6 +51,7 @@ ARG DB_AUTHSOURCE
 ARG DB_AUTH_USER
 ARG DB_AUTH_PASSWORD
 ARG REST_INNER_PORT
+ARG HOST
 
 # Create .env file with environment variables
 RUN echo "DB_SERVER=${DB_SERVER}" > /app/MDDB-REST-API/.env && \
@@ -55,6 +60,7 @@ RUN echo "DB_SERVER=${DB_SERVER}" > /app/MDDB-REST-API/.env && \
     echo "DB_AUTHSOURCE=${DB_AUTHSOURCE}" >> /app/MDDB-REST-API/.env && \
     echo "DB_AUTH_USER=${DB_AUTH_USER}" >> /app/MDDB-REST-API/.env && \
     echo "DB_AUTH_PASSWORD=${DB_AUTH_PASSWORD}" >> /app/MDDB-REST-API/.env && \
+    echo "HOST=${HOST}" >> /app/MDDB-REST-API/.env && \
     echo "LISTEN_PORT=${REST_INNER_PORT}" >> /app/MDDB-REST-API/.env
 
 # Change working directory to /app/MDDB-REST-API
@@ -80,7 +86,6 @@ WORKDIR /app
 
 # Copy from the previous stage
 COPY --from=build /app/MDDB-REST-API /app/MDDB-REST-API
-COPY --from=build /app/chemfiles /app/chemfiles
 COPY --from=build /app/version.txt /app/version.txt
 
 # Change working directory to /app/MDDB-REST-API
