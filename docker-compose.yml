@@ -169,8 +169,6 @@ services:
       VRE_DB_PASSWORD: ${VRE_LITE_DB_PASSWORD}
       REST_DB_LOGIN: ${REST_DB_LOGIN}
       REST_DB_PASSWORD: ${REST_DB_PASSWORD}
-    # ports:
-    #   - "${DB_OUTER_PORT}:${DB_INNER_PORT}"
     volumes:
       - db_volume:/data/db  # path where the database will be stored (outside the container, in the host machine)
       - ./mongodb/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro # path to the template initialization script
