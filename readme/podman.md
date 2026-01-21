@@ -31,13 +31,13 @@ The **first service** to be deployed is **mongodb** because some other services 
 Typical execution:
 
 ```sh
-podman run -d --name mongodb -e MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME} -e MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD} -e MONGO_PORT=${DB_OUTER_PORT} -e MONGO_INITDB_DATABASE=${DB_NAME} -e LOADER_DB_LOGIN=${LOADER_DB_LOGIN} -e LOADER_DB_PASSWORD=${LOADER_DB_PASSWORD} -e MONGO_VRE_DATABASE=${VRE_LITE_MONGO_DATABASE} -e VRE_DB_LOGIN=${VRE_LITE_DB_LOGIN} -e VRE_DB_PASSWORD=${VRE_LITE_DB_PASSWORD} -e REST_DB_LOGIN=${REST_DB_LOGIN} -e REST_DB_PASSWORD=${REST_DB_PASSWORD} -p ${DB_OUTER_PORT}:${DB_OUTER_PORT} -v ${DB_VOLUME_PATH}:/data/db:Z -v $(pwd)/mongodb/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro --cpus "${DB_CPU_LIMIT}" --memory "${DB_MEMORY_LIMIT}" --network data_network --security-opt label=disable docker.io/library/mongo:6
+podman run -d --name mongodb -e MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME} -e MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD} -e MONGO_PORT=${DB_OUTER_PORT} -e MONGO_INITDB_DATABASE=${DB_NAME} -e LOADER_DB_LOGIN=${LOADER_DB_LOGIN} -e LOADER_DB_PASSWORD=${LOADER_DB_PASSWORD} -e MONGO_VRE_DATABASE=${VRE_LITE_MONGO_DATABASE} -e VRE_DB_LOGIN=${VRE_LITE_DB_LOGIN} -e VRE_DB_PASSWORD=${VRE_LITE_DB_PASSWORD} -e REST_DB_LOGIN=${REST_DB_LOGIN} -e REST_DB_PASSWORD=${REST_DB_PASSWORD} -v ${DB_VOLUME_PATH}:/data/db:Z -v $(pwd)/mongodb/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro --cpus "${DB_CPU_LIMIT}" --memory "${DB_MEMORY_LIMIT}" --network data_network --security-opt label=disable docker.io/library/mongo:6
 ```
 
 Sometimes, podman gives **problems with permissions**. Typically, these problems arise from using **NFS file systems** and **non-root permissions** in podman. Therefore, to avoid these problems, an alternative execution can be performed, using a [**mongo-nonroot.sh**](../mongodb/mongo-nonroot.sh) bash script for intialising the **mongodb** service:
 
 ```sh
-podman run -d --name mongodb -e MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME} -e MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD} -e MONGO_PORT=${DB_OUTER_PORT} -e MONGO_INITDB_DATABASE=${DB_NAME} -e LOADER_DB_LOGIN=${LOADER_DB_LOGIN} -e LOADER_DB_PASSWORD=${LOADER_DB_PASSWORD} -e MONGO_VRE_DATABASE=${VRE_LITE_MONGO_DATABASE} -e VRE_DB_LOGIN=${VRE_LITE_DB_LOGIN} -e VRE_DB_PASSWORD=${VRE_LITE_DB_PASSWORD} -e REST_DB_LOGIN=${REST_DB_LOGIN} -e REST_DB_PASSWORD=${REST_DB_PASSWORD} -e DB_OUTER_PORT=${DB_OUTER_PORT} -p ${DB_OUTER_PORT}:${DB_OUTER_PORT} -v ${DB_VOLUME_PATH}:/data/db:Z -v $(pwd)/mongodb/mongo-nonroot.sh:/entrypoint.sh:Z --entrypoint /entrypoint.sh -v $(pwd)/mongodb/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro --cpus "${DB_CPU_LIMIT}" --memory "${DB_MEMORY_LIMIT}" --network data_network --security-opt label=disable docker.io/library/mongo:6
+podman run -d --name mongodb -e MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME} -e MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD} -e MONGO_PORT=${DB_OUTER_PORT} -e MONGO_INITDB_DATABASE=${DB_NAME} -e LOADER_DB_LOGIN=${LOADER_DB_LOGIN} -e LOADER_DB_PASSWORD=${LOADER_DB_PASSWORD} -e MONGO_VRE_DATABASE=${VRE_LITE_MONGO_DATABASE} -e VRE_DB_LOGIN=${VRE_LITE_DB_LOGIN} -e VRE_DB_PASSWORD=${VRE_LITE_DB_PASSWORD} -e REST_DB_LOGIN=${REST_DB_LOGIN} -e REST_DB_PASSWORD=${REST_DB_PASSWORD} -e DB_OUTER_PORT=${DB_OUTER_PORT} -v ${DB_VOLUME_PATH}:/data/db:Z -v $(pwd)/mongodb/mongo-nonroot.sh:/entrypoint.sh:Z --entrypoint /entrypoint.sh -v $(pwd)/mongodb/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro --cpus "${DB_CPU_LIMIT}" --memory "${DB_MEMORY_LIMIT}" --network data_network --security-opt label=disable docker.io/library/mongo:6
 ```
 
 **IMPORTANT**
@@ -45,7 +45,7 @@ podman run -d --name mongodb -e MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_U
 In some podman implementations, the REST API gave some problems connecting to the mongo DB via service name. Therefore, in order to fix that, the **DB_SERVER** must be the **mongodb service IP**. So, for **setting this IP beforehand**, the **--ip flag** can be added:
 
 ```sh
-podman run -d --name mongodb -e MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME} -e MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD} -e MONGO_PORT=${DB_OUTER_PORT} -e MONGO_INITDB_DATABASE=${DB_NAME} -e LOADER_DB_LOGIN=${LOADER_DB_LOGIN} -e LOADER_DB_PASSWORD=${LOADER_DB_PASSWORD} -e MONGO_VRE_DATABASE=${VRE_LITE_MONGO_DATABASE} -e VRE_DB_LOGIN=${VRE_LITE_DB_LOGIN} -e VRE_DB_PASSWORD=${VRE_LITE_DB_PASSWORD} -e REST_DB_LOGIN=${REST_DB_LOGIN} -e REST_DB_PASSWORD=${REST_DB_PASSWORD} -e DB_OUTER_PORT=${DB_OUTER_PORT} -p ${DB_OUTER_PORT}:${DB_OUTER_PORT} -v ${DB_VOLUME_PATH}:/data/db:Z -v $(pwd)/mongodb/mongo-nonroot.sh:/entrypoint.sh:Z --entrypoint /entrypoint.sh -v $(pwd)/mongodb/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro --cpus "${DB_CPU_LIMIT}" --memory "${DB_MEMORY_LIMIT}" --network data_network --ip <IP ADDRESS> --security-opt label=disable docker.io/library/mongo:6
+podman run -d --name mongodb -e MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME} -e MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD} -e MONGO_PORT=${DB_OUTER_PORT} -e MONGO_INITDB_DATABASE=${DB_NAME} -e LOADER_DB_LOGIN=${LOADER_DB_LOGIN} -e LOADER_DB_PASSWORD=${LOADER_DB_PASSWORD} -e MONGO_VRE_DATABASE=${VRE_LITE_MONGO_DATABASE} -e VRE_DB_LOGIN=${VRE_LITE_DB_LOGIN} -e VRE_DB_PASSWORD=${VRE_LITE_DB_PASSWORD} -e REST_DB_LOGIN=${REST_DB_LOGIN} -e REST_DB_PASSWORD=${REST_DB_PASSWORD} -e DB_OUTER_PORT=${DB_OUTER_PORT} -v ${DB_VOLUME_PATH}:/data/db:Z -v $(pwd)/mongodb/mongo-nonroot.sh:/entrypoint.sh:Z --entrypoint /entrypoint.sh -v $(pwd)/mongodb/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro --cpus "${DB_CPU_LIMIT}" --memory "${DB_MEMORY_LIMIT}" --network data_network --ip <IP ADDRESS> --security-opt label=disable docker.io/library/mongo:6
 ```
 
 Take into account that, in some infrastructures, the **IP** must belong to a **range** in order to work properly. So it's **highly recommended** to use the implementation **without the IP fixed** and let Podman to assign them automatically.
@@ -351,6 +351,59 @@ CONTAINER ID  IMAGE                            COMMAND               CREATED    
 <ID>          localhost/vre_lite_image:latest                        3 seconds ago   Up 4 seconds          0.0.0.0:8082->3001/tcp                                          vre_lite
 <ID>          docker.io/library/mongo:6        bash -c sh /backu...  3 minutes ago   Up 3 minutes                                                                          mongo-backup
 ```
+
+### Inspect podman network 
+
+The **client**, **rest** and **mongodb** containers are in the same network. Execute the following instruction for inspecting the **podman network**:
+
+```sh
+podman network inspect data_network
+```
+
+It should show something like:
+
+```json
+[
+     {
+          "name": "data_network",
+          "id": "<ID>",
+          "driver": "bridge",
+          "network_interface": "cni-podman2",
+          "created": "<DATE>",
+          "subnets": [
+               {
+                    "subnet": "<IP>",
+                    "gateway": "<IP>"
+               }
+          ],
+          "ipv6_enabled": false,
+          "internal": false,
+          "dns_enabled": true,
+          "ipam_options": {
+               "driver": "host-local"
+          }
+     }
+]
+```
+
+To verify container attachment:
+
+```sh
+podman inspect mongodb | grep -A5 Networks
+```
+
+Should yield:
+
+```json
+"Networks": {
+    "data_network": {
+        "EndpointID": "",
+        "Gateway": "<IP>",
+        "IPAddress": "<IP>",
+        "IPPrefixLen": 24,
+```
+
+And **IPAddress** must be in the same **IP range** of **data_network**.
 
 ### Podman Stats
 
