@@ -192,6 +192,36 @@ If there is a previous version of the database it can be copied into the **my_st
 * **ROOT_PASSWORD:** Root password for the DB.
 * **DB_TO_RESTORE:** Name of the database to restore.
 
+## Open temporarily MongoDB port
+
+The MongoDB port is **closed by default** for security purposes. If needed, it can be **temporarily** open with this command:
+
+```sh
+docker service update --publish-add mode=host,published=27017,target=27017 my_stack_mongodb
+```
+
+Check that the **27017 port** is efectively open:
+
+```sh
+$ ss -tuln | grep 27017
+tcp   LISTEN 0      4096             0.0.0.0:27017      0.0.0.0:*          
+tcp   LISTEN 0      4096                [::]:27017         [::]:*
+```
+
+After using it, please **execute** the following command for **closing** it again:
+
+```sh
+docker service update --publish-rm mode=host,published=27017,target=27017 my_stack_mongodb
+```
+
+Now the following command:
+
+```sh
+$ ss -tuln | grep 27017
+```
+
+Should return nothing again.
+
 ## Check image version
 
 ```sh
