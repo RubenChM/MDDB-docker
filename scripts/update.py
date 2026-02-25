@@ -80,22 +80,40 @@ class VersionChecker:
         # Get GitHub token from environment if available
         env_vars = self.read_env_file('.env')
         github_token = env_vars.get('GH_PAT')
-
-        if github_token:
-            # Use authorization header with token
-            command = f'curl -s -H "Authorization: Bearer {github_token}" "https://api.github.com/repos/{org}/{repo}/tags" | grep -m 1 \'"name":\' | sed -E \'s/.*"name": "([^"]+)".*/\\1/\''
-        else:
-            # Use without authorization (rate limited)
-            command = f'curl -s "https://api.github.com/repos/{org}/{repo}/tags" | grep -m 1 \'"name":\' | sed -E \'s/.*"name": "([^"]+)".*/\\1/\''
-
+        credentials = f'-H "Authorization: Bearer {github_token}"' if github_token else ''
+        # Use authorization header with token when possible
+        command = f'curl -s {credentials} "https://api.github.com/repos/{org}/{repo}/tags"'
         success, output = self.run_command(command, shell=True, stream_output=False)
 
         if not success or not output:
             print(f"    ⚠️  Could not fetch version for {org}/{repo}")
             return "unknown"
+        
+        # Parse the response
+        tags = json.loads(output)
+        
+        # Get the date of every tag from the last commit
+        for tag in tags:
+
+            # Ask the API for the commit data
+            commit_url = tag['commit']['url']
+            command = f'curl -s {credentials} "{commit_url}"'
+            success, output = self.run_command(command, shell=True, stream_output=False)
+            if not success or not output:
+                raise RuntimeError(f'Could not fetch data from {commit_url}')
+            
+            # Extract and store the date
+            commit = json.loads(output)
+            tag['date'] = commit['commit']['author']['date']
+
+        # Now sort tags according to their dates
+        sorted_tags = sorted(tags, key=lambda tag: tag['date'], reverse=True)
+
+        # Get the latest tag version
+        latest_tag = sorted_tags[0]
+        version = latest_tag['name']
 
         # Remove 'v' prefix if present (v1.1 -> 1.1)
-        version = output.strip()
         if version.startswith('v'):
             version = version[1:]
 
