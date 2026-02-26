@@ -102,6 +102,7 @@ An `.env` file must be created in the **root** of the project. The file [**.env.
 | MINIO_MEMORY_RESERVATION      | string  | MinIO reserved memory                         |
 | MINIO_PROTOCOL      | string  | MinIO API protocol (http|https)                        |
 | MINIO_URL      | `<url>`  | url for MinIO (ie localhost)                          |
+| MINIO_ADDRESS | string | IP of the MinIO service    |
 | &nbsp;
 | VRE_LITE_VOLUME_PATH         | string  | path where the VRE lite will save the logs                                        |
 | VRE_LITE_REPLICAS      | number  | number of replicas to deploy                                    |

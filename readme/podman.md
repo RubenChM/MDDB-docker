@@ -110,16 +110,18 @@ podman run -d --name minio -e MINIO_ROOT_USER=${MINIO_ROOT_USER} -e MINIO_ROOT_P
 
 **IMPORTANT**
 
-In some podman implementations, the VRE lite gave some problems connecting to the minio service via service name. Therefore, in order to fix that, edit the [**Dockerfile**](./vre_lite/Dockerfile) and modify _http://minio_ by _http://MINIO_IP_. Where **MINIO_IP** is got executing the following instruction:
+In some podman implementations, the VRE lite gave some problems connecting to the minio service via service name. Therefore, in order to fix that, get the MinIO IP executing the following instruction:
 
 ```sh
 podman inspect -f '{{.NetworkSettings.Networks.minio_network.IPAddress}}' minio
 ```
 
+And assign the value to **MINIO_ADDRESS** in the [**global .env**](config.md#env-file). 
+
 After that, build the vre_lite service:
 
 ```sh
-podman build -t vre_lite_image --build-arg MINIO_USER=${MINIO_USER} --build-arg MINIO_PASSWORD=${MINIO_PASSWORD} --build-arg MINIO_API_PORT=${MINIO_API_INNER_PORT} --build-arg VRE_LITE_INNER_PORT=${VRE_LITE_INNER_PORT} --build-arg VRE_LITE_BASE_URL_DEVELOPMENT=${VRE_LITE_BASE_URL_DEVELOPMENT} --build-arg VRE_LITE_BASE_URL_STAGING=${VRE_LITE_BASE_URL_STAGING} --build-arg VRE_LITE_BASE_URL_PRODUCTION=${VRE_LITE_BASE_URL_PRODUCTION} --build-arg VRE_LITE_LOG_PATH=${VRE_LITE_LOG_PATH} --build-arg VRE_LITE_MAX_FILE_SIZE=${VRE_LITE_MAX_FILE_SIZE} --build-arg VRE_LITE_TIME_DIFF=${VRE_LITE_TIME_DIFF} --build-arg VERSION=${VRE_LITE_VERSION} --build-arg MINIO_PROTOCOL=${MINIO_PROTOCOL} --build-arg MINIO_URL=${MINIO_URL} --build-arg MINIO_PORT=${APACHE_MINIO_OUTER_PORT} --build-arg NODE_NAME=${NODE} --build-arg DB_USER=${VRE_LITE_DB_LOGIN} --build-arg DB_PASS=${VRE_LITE_DB_PASSWORD} --build-arg DB_SERVER=${VRE_LITE_DB_SERVER} --build-arg DB_PORT=${VRE_LITE_DB_OUTER_PORT} --build-arg DB_NAME=${VRE_LITE_MONGO_DATABASE} --build-arg PAT=${GH_PAT} ./vre_lite
+podman build -t vre_lite_image --build-arg MINIO_USER=${MINIO_USER} --build-arg MINIO_PASSWORD=${MINIO_PASSWORD} --build-arg MINIO_API_PORT=${MINIO_API_INNER_PORT}  --build-arg MINIO_ADDRESS=${MINIO_ADDRESS} --build-arg VRE_LITE_INNER_PORT=${VRE_LITE_INNER_PORT} --build-arg VRE_LITE_BASE_URL_DEVELOPMENT=${VRE_LITE_BASE_URL_DEVELOPMENT} --build-arg VRE_LITE_BASE_URL_STAGING=${VRE_LITE_BASE_URL_STAGING} --build-arg VRE_LITE_BASE_URL_PRODUCTION=${VRE_LITE_BASE_URL_PRODUCTION} --build-arg VRE_LITE_LOG_PATH=${VRE_LITE_LOG_PATH} --build-arg VRE_LITE_MAX_FILE_SIZE=${VRE_LITE_MAX_FILE_SIZE} --build-arg VRE_LITE_TIME_DIFF=${VRE_LITE_TIME_DIFF} --build-arg VERSION=${VRE_LITE_VERSION} --build-arg MINIO_PROTOCOL=${MINIO_PROTOCOL} --build-arg MINIO_URL=${MINIO_URL} --build-arg MINIO_PORT=${APACHE_MINIO_OUTER_PORT} --build-arg NODE_NAME=${NODE} --build-arg DB_USER=${VRE_LITE_DB_LOGIN} --build-arg DB_PASS=${VRE_LITE_DB_PASSWORD} --build-arg DB_SERVER=${VRE_LITE_DB_SERVER} --build-arg DB_PORT=${VRE_LITE_DB_OUTER_PORT} --build-arg DB_NAME=${VRE_LITE_MONGO_DATABASE} --build-arg PAT=${GH_PAT} ./vre_lite
 ```
 
 ## Run services
@@ -159,7 +161,7 @@ podman run -d --name client -p ${CLIENT_OUTER_PORT}:${CLIENT_INNER_PORT} --cpus 
 Before launching VRE lite, please be sure that **Podman socket** is initialised:
 
 ```sh
-$ systemctl --user status podman.socket
+systemctl --user status podman.socket
 ```
 
 If the socket is **not running** (ie it says `Active: inactive (dead)`), you need to **start it**:
