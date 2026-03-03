@@ -300,13 +300,21 @@ class VersionChecker:
             return False
 
         # Run rebuild.py for the service
-        podman = self.command_exists(['podman', 'version'])
-        if podman:
-            print("   🐳 Using Podman for rebuilding")
-            command = ["python3", rebuild_script, '-p', '-s', service_name, '-t', stack_name]
-        else:
+        # podman = self.command_exists(['podman', 'version'])
+        # if podman:
+        #     print("   🐳 Using Podman for rebuilding")
+        #     command = ["python3", rebuild_script, '-p', '-s', service_name, '-t', stack_name]
+        # else:
+        #     print("   🐳 Using Docker for rebuilding")
+        #     command = ["python3", rebuild_script, '-s', service_name, '-t', stack_name]
+
+        docker = self.command_exists(['docker', 'version'])
+        if docker:
             print("   🐳 Using Docker for rebuilding")
             command = ["python3", rebuild_script, '-s', service_name, '-t', stack_name]
+        else:
+            print("   🐳 Using Podman for rebuilding")
+            command = ["python3", rebuild_script, '-p', '-s', service_name, '-t', stack_name]
 
         print(f"   Running: {' '.join(command)}")
         success, output = self.run_command(command, shell=False, stream_output=True)
