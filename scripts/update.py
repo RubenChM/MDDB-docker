@@ -125,12 +125,18 @@ class VersionChecker:
         print(f"  🐳 Checking Docker service version for {service_name}...")
 
         # Check if Podman is available, otherwise use Docker
-        podman = self.command_exists(['podman', 'version'])
-        # Use the exact command from the prompt
-        if podman:
-            command = f'podman run --entrypoint "" --rm {image_name} sh -c "cat /app/version.txt"'
-        else:
+        # podman = self.command_exists(['podman', 'version'])
+        # # Use the exact command from the prompt
+        # if podman:
+        #     command = f'podman run --entrypoint "" --rm {image_name} sh -c "cat /app/version.txt"'
+        # else:
+        #     command = f'docker run --entrypoint "" --rm {image_name} sh -c "cat /app/version.txt"'
+
+        docker = self.command_exists(['docker', 'version'])
+        if docker:
             command = f'docker run --entrypoint "" --rm {image_name} sh -c "cat /app/version.txt"'
+        else:
+            command = f'podman run --entrypoint "" --rm {image_name} sh -c "cat /app/version.txt"'
 
         success, output = self.run_command(command, shell=True, stream_output=False)
 
