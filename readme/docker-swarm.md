@@ -109,6 +109,14 @@ docker exec -it \
 docker service update --force my_stack_rest
 ```
 
+## Generate VRE lite database
+
+The versions for **each service** of the stack are stored into a database. The **status** of these services is shown in the **VRE lite service**. After the **installation** and **deploy** of the services, this **database** must be **generated**:
+
+```sh
+python3 scripts/update-services-versions.py 
+```
+
 ## Execute services
 
 Once the installation is finished, it's time to **execute** and **check** the different services.
