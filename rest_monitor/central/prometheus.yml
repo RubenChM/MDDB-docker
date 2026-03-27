@@ -1,0 +1,30 @@
+global:
+  scrape_interval: 10m
+  external_labels:
+    node: 'IRB-DEV'   # <- replace with a unique name per node
+
+scrape_configs:
+  # Scrape the state of Prometheus itself
+  - job_name: 'prometheus_central'
+    scrape_interval: 60m
+    static_configs:
+      - targets: ['127.0.0.1:9090']
+
+  # Scrape the resources of the machine
+  # - job_name: 'node'
+  #   static_configs:
+  #     - targets: ['node-exporter:9100']
+  
+  # Scrape the REST request metrics
+  - job_name: "rest"
+    metrics_path: '/metrics'
+    # Discover rest services 
+    dns_sd_configs:
+      - names:
+          - 'tasks.my_stack_rest'
+        type: 'A'
+        port: 3000
+
+
+# All node metrics arrive via remote_write — no scrape jobs needed for nodes.
+# The 'node' label added by each node's external_labels lets you filter per machine.
