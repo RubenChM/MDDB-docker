@@ -118,11 +118,11 @@ services:
       - ./provisioning:/etc/grafana/provisioning  # auto-provisions the data source
       - ./provisioning/dashboards:/etc/grafana/provisioning/dashboards  # mount dashboards
     environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin   # change this
-      # - GF_SERVER_DOMAIN=irb-dev.mddbr.eu
-      # - GF_SERVER_ROOT_URL=https://irb-dev.mddbr.eu/grafana/
-      # - GF_SERVER_SERVE_FROM_SUB_PATH=true
+      - GF_SECURITY_ADMIN_USER=mddb
+      - GF_SECURITY_ADMIN_PASSWORD=patata   # change this
+      - GF_SERVER_DOMAIN=irb-dev.mddbr.eu
+      - GF_SERVER_ROOT_URL=https://irb-dev.mddbr.eu/grafana/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
     ports:
       - "3000:3000"
     networks:
