@@ -1,0 +1,131 @@
+# Central compose — deploy this on the central monitoring machine only.
+# Loki receives logs from all nodes; Grafana reads from it.
+
+networks:
+  web_network:
+    external: true
+
+volumes:
+  loki_data: {}
+  grafana_data: {}
+  prometheus_data: {}
+
+services:
+  # Collects logs from the API and forwards to Loki
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: otel-collector
+    restart: unless-stopped
+    volumes:
+      - ./otel.yaml:/etc/otelcol/otel.yaml:ro
+    command: ["--config=/etc/otelcol/otel.yaml"]
+    ports:
+      - "4318:4318"   # OTLP HTTP
+    networks:
+      - web_network
+    depends_on:
+      - loki
+
+  # Stores logs and serves them to Grafana
+  loki:
+    image: grafana/loki
+    container_name: loki
+    restart: unless-stopped
+    volumes:
+      - loki_data:/loki
+      - ./loki-config.yaml:/etc/loki/config.yaml:ro
+    command:
+      -validation.allow-structured-metadata
+      -config.file=/etc/loki/config.yaml
+    ports:
+      - "3100:3100"
+    networks:
+      - web_network
+
+  # Host metrics
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro,rslave
+    command:
+      - '--path.procfs=/host/proc' # Mapping host proc to container /host/proc
+      - '--path.sysfs=/host/sys'   # Mapping host sys to container /host/sys
+      - '--path.rootfs=/rootfs'    # Mapping host root to container /rootfs
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+      # Disable default collectors and enable only a few
+      - '--collector.disable-defaults'
+      - '--collector.cpu'
+      - '--collector.filesystem'
+      - '--collector.meminfo'
+    pid: host
+    network_mode: host
+  
+  # Container metrics
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    restart: unless-stopped
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    command:
+      # https://github.com/google/cadvisor/blob/master/docs/runtime_options.md
+      - '--enable_metrics=cpu,disk,memory'
+      - '--housekeeping_interval=10s'
+      - '--docker_only'
+      - '--store_container_labels=false'
+    networks:
+      - web_network
+
+  # Collects metrics and serves them to Grafana
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.size=10GB'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle' 
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      # host 9090 forwarded to container 9090 (default Prometheus port)
+      - "9090:9090"
+    networks:
+      - web_network
+
+  # Visualizes logs from Loki
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./provisioning:/etc/grafana/provisioning  # auto-provisions the data source
+      - ./provisioning/dashboards:/etc/grafana/provisioning/dashboards  # mount dashboards
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin   # change this
+      # - GF_SERVER_DOMAIN=irb-dev.mddbr.eu
+      # - GF_SERVER_ROOT_URL=https://irb-dev.mddbr.eu/grafana/
+      # - GF_SERVER_SERVE_FROM_SUB_PATH=true
+    ports:
+      - "3000:3000"
+    networks:
+      - web_network
+    depends_on:
+      - loki

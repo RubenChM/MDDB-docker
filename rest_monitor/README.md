@@ -1,75 +1,83 @@
 
-This monitoring stack can be mounted in two common ways:
+# Monitoring Stack Overview
 
-1. Central Pull (Scraping): a central Prometheus scrapes metrics directly from all nodes.
-2. Federated Push (Remote Write): each node runs local scraping and pushes metrics to a central Prometheus.
+This monitoring stack collects **API logs** and **infrastructure metrics** for visualization in Grafana.
 
-| Feature | Central Pull (Scraping) | Federated Push (Remote Write) |
-| --- | --- | --- |
-| Best For | Small clusters, same network. | Large scale, multi-region, hybrid cloud. |
-| Firewall Rule | Inbound to Nodes (Riskier) | Outbound from Nodes (Safer) |
-| Data Integrity | Lost during network outages. | Buffered during network outages. |
-| Setup Speed | Very Fast (One config). | Slower (Multiple configs). |
-| Scalability | Vertical (Bigger central server). | Horizontal (Add more nodes). |
-| Replicas | Works best when each replica is scraped directly; **scraping one load-balanced URL can mix/reset counters**. | Local Prometheus can scrape all replicas and remote_write per-replica series to central Prometheus. |
+## Stack Components
 
-# Federated Push (Remote Write)
+| Component         | Role                                      | How it’s monitored           |
+|-------------------|-------------------------------------------|------------------------------|
+| REST API          | Sends logs to OpenTelemetry Collector      | Logs in Loki                 |
+| OpenTelemetry     | Receives logs, forwards to Loki            | Metrics via Prometheus       |
+| Loki              | Stores and serves logs                     | Metrics via Prometheus       |
+| node-exporter     | Host hardware/OS metrics                   | Scraped by Prometheus        |
+| cAdvisor          | Container metrics                          | Scraped by Prometheus        |
+| Prometheus        | Scrapes metrics, serves to Grafana         | Self-scraped                 |
+| Grafana           | Visualizes logs (Loki) and metrics         | -                            |
 
-Monitoring architecture:
-```
-Node 1  [node-exporter → prometheus] ─── remote_write ──┐
-Node 2  [node-exporter → prometheus] ─── remote_write ──┼──► Central Prometheus ──► Grafana
-Node N  [node-exporter → prometheus] ─── remote_write ──┘
-```
+## Architecture
 
-## Central Prometheus
-
-Deploy this on a central monitoring server. It runs a single container:
-
-- **prometheus**: receives metrics from all node Prometheus instances via `remote_write` and stores them in its time-series database. Grafana will query this Prometheus for all metrics.
-
-## Node Prometheus
-
-Deploy this on every monitored node. It runs two containers:
-
-- [**node-exporter**](https://github.com/prometheus/node_exporter): exposes hardware and OS metrics (CPU, memory, disk, network) from the host machine.
-- **prometheus**: scrapes node-exporter and metrics from the **swagger-stats** API endpoint every 5 minutes and forwards all metrics to the central Prometheus via `remote_write`.
+- **API Logs:**  
+   The REST API sends logs directly to the local [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/), which forwards them to a local [Loki](https://grafana.com/oss/loki/) instance. (Future: also forward to a central Loki.)
+- **Infrastructure Metrics:**  
+   [Prometheus](https://prometheus.io/) scrapes metrics from:
+   - **Loki** (log system health)
+   - **node-exporter** (host hardware/OS metrics)
+   - **Prometheus itself**
+   - **cAdvisor** (container metrics)
+- **Visualization:**  
+   [Grafana](https://grafana.com/) connects to both Loki (for logs) and Prometheus (for metrics).
 
 ```
-[host machine] → node-exporter :9100 ──► prometheus :9091 ── remote_write ──► central Prometheus
-               API /metrics endpoint ──► prometheus :9091 ─┘
+REST API ──► OpenTelemetry Collector ──► Loki ──► Grafana
+                                                     ▲
+                 node-exporter (host metrics) ─┐     │
+                 cAdvisor (container metrics) ─┼► Prometheus
+            Loki/Prometheus (service metrics) ─┘ 
 ```
 
-Each node tags its metrics with a unique `node` label (set in `prometheus.yml` under `external_labels`), so all nodes can be distinguished in Grafana.
+## Key Features
 
-### Setup
+- **API logs** are structured and searchable in Grafana via Loki.
+- **Metrics** (CPU, memory, disk, etc.) are available in Grafana via Prometheus.
+- **No Prometheus scraping of API logs**: all API request logs flow through OpenTelemetry → Loki.
+- **Future-proof**: OpenTelemetry Collector can be configured to forward logs to a central Loki for multi-node setups.
 
-1. Edit `prometheus.yml`:
-   - Set `external_labels.node` to a unique name for this machine (e.g. `node1`).
-   - Set the `remote_write` URL to the central Prometheus IP.
+---
 
-2. Start:
-   ```bash
-   docker network create web_network 2>/dev/null
-   docker-compose up -d
-   ```
+## Setup
 
-# Useful commands
+1. **Edit configuration files as needed:**
+    - `otel.yaml`: Set the node name under the `resource` processor, e.g. `value: "IRB-DEV"`.
+    - `prometheus.yml`: Set `external_labels.node` to a unique name for this machine, e.g. `node: 'IRB-DEV'`.
+
+2. **Start the stack:**
+    ```bash
+    docker network create web_network 2>/dev/null
+    docker compose up -d
+    ```
+
+3. **Configure your API** to send logs to the OpenTelemetry Collector endpoint (`http://localhost:4318/v1/logs`).
+
+---
+
+## Useful Commands
 
 ```bash
-# Check Prometheus is running and scraping targets:
+# Check Prometheus targets (Loki, node-exporter, cAdvisor, itself):
 curl http://127.0.0.1:9090/api/v1/targets | jq '.data.activeTargets'
 
-# Check disk usage:
-docker exec -it prometheus-node du -sh /prometheus
+# Check Loki health:
+curl http://127.0.0.1:3100/ready
 
-# Check prometheus logs for remote_write errors
-docker logs prometheus-node 2>&1 | grep -i "remote\|error\|write"
+# Check Prometheus disk usage:
+docker exec -it prometheus du -sh /prometheus
 
-# Check cardinality of metrics:
-curl -s http://localhost:9090/api/v1/status/tsdb | jq '.data'
+# Check Loki disk usage:
+docker exec -it loki du -sh /loki
 
-# Check volume usage:
-docker volume ls | grep prometheus
-docker volume inspect central_prometheus_data | jq '.[0].Mountpoint' | xargs du -sh
+# Check logs for errors:
+docker logs prometheus 2>&1 | grep -i "error"
+docker logs loki 2>&1 | grep -i "error"
+docker logs otel-collector 2>&1 | grep -i "error"
 ```

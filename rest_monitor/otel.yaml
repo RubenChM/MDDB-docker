@@ -1,0 +1,27 @@
+receivers:
+  otlp:
+    protocols:
+      http: # Receives from REST API
+        endpoint: "0.0.0.0:4318"
+
+processors:
+  batch: # Efficiently bundles logs before sending
+  resource:
+    attributes: # Automatically adds the node name to every log
+      - key: node
+        value: "IRB-DEV"  # Change this to a unique name for each machine
+        action: insert
+
+exporters:
+  otlphttp:
+    endpoint: "http://loki:3100/otlp"
+  # loki/central:
+  #   endpoint: "http://<CENTRAL_IP>:3100/otlp"  # send to central Loki (if different from local)
+
+service:
+  pipelines:
+    logs:
+      receivers: [otlp]
+      processors: [resource, batch]
+      exporters: [otlphttp]
+      # exporters: [otlphttp, loki/central]
