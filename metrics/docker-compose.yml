@@ -115,14 +115,21 @@ services:
     restart: unless-stopped
     volumes:
       - grafana_data:/var/lib/grafana
+      - ./grafana.ini:/etc/grafana/grafana.ini:ro
       - ./provisioning:/etc/grafana/provisioning  # auto-provisions the data source
       - ./provisioning/dashboards:/etc/grafana/provisioning/dashboards  # mount dashboards
     environment:
-      - GF_SECURITY_ADMIN_USER=mddb
-      - GF_SECURITY_ADMIN_PASSWORD=patata   # change this
       - GF_SERVER_DOMAIN=irb-dev.mddbr.eu
       - GF_SERVER_ROOT_URL=https://irb-dev.mddbr.eu/grafana/
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
+      - GF_AUTH_GOOGLE_ENABLED=${GF_AUTH_GOOGLE_ENABLED:-false}
+      - GF_AUTH_GOOGLE_CLIENT_ID=${GF_AUTH_GOOGLE_CLIENT_ID:-}
+      - GF_AUTH_GOOGLE_CLIENT_SECRET=${GF_AUTH_GOOGLE_CLIENT_SECRET:-}
+      - GF_AUTH_GOOGLE_ALLOWED_DOMAINS=${GF_AUTH_GOOGLE_ALLOWED_DOMAINS:-}
+      - GF_AUTH_GITHUB_ENABLED=${GF_AUTH_GITHUB_ENABLED:-false}
+      - GF_AUTH_GITHUB_CLIENT_ID=${GF_AUTH_GITHUB_CLIENT_ID:-}
+      - GF_AUTH_GITHUB_CLIENT_SECRET=${GF_AUTH_GITHUB_CLIENT_SECRET:-}
+      - GF_AUTH_GITHUB_ALLOWED_ORGANIZATIONS=${GF_AUTH_GITHUB_ALLOWED_ORGANIZATIONS:-}
     ports:
       - "3000:3000"
     networks:
