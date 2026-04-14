@@ -119,9 +119,9 @@ services:
       - ./provisioning:/etc/grafana/provisioning  # auto-provisions the data source
       - ./provisioning/dashboards:/etc/grafana/provisioning/dashboards  # mount dashboards
     environment:
-      - GF_SERVER_DOMAIN=irb-dev.mddbr.eu
-      - GF_SERVER_ROOT_URL=https://irb-dev.mddbr.eu/grafana/
+      - GF_SERVER_ROOT_URL=%(protocol)s://%(domain)s/grafana/
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
+      - GF_SERVER_ENFORCE_DOMAIN=false
       - GF_AUTH_GOOGLE_ENABLED=${GF_AUTH_GOOGLE_ENABLED:-false}
       - GF_AUTH_GOOGLE_CLIENT_ID=${GF_AUTH_GOOGLE_CLIENT_ID:-}
       - GF_AUTH_GOOGLE_CLIENT_SECRET=${GF_AUTH_GOOGLE_CLIENT_SECRET:-}
