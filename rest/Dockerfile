@@ -61,7 +61,8 @@ RUN echo "DB_SERVER=${DB_SERVER}" > /app/MDDB-REST-API/.env && \
     echo "DB_AUTH_USER=${DB_AUTH_USER}" >> /app/MDDB-REST-API/.env && \
     echo "DB_AUTH_PASSWORD=${DB_AUTH_PASSWORD}" >> /app/MDDB-REST-API/.env && \
     echo "HOST=${HOST}" >> /app/MDDB-REST-API/.env && \
-    echo "LISTEN_PORT=${REST_INNER_PORT}" >> /app/MDDB-REST-API/.env
+    echo "LISTEN_PORT=${REST_INNER_PORT}" >> /app/MDDB-REST-API/.env && \
+    echo "METRICS=true" >> /app/MDDB-REST-API/.env
 
 # Change working directory to /app/MDDB-REST-API
 WORKDIR /app/MDDB-REST-API

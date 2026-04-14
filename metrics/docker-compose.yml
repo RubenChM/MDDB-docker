@@ -2,7 +2,7 @@
 # Loki receives logs from all nodes; Grafana reads from it.
 
 networks:
-  web_network:
+  metrics_network:
     external: true
 
 volumes:
@@ -22,7 +22,7 @@ services:
     ports:
       - "4318:4318"   # OTLP HTTP
     networks:
-      - web_network
+      - metrics_network
     depends_on:
       - loki
 
@@ -40,7 +40,7 @@ services:
     ports:
       - "3100:3100"
     networks:
-      - web_network
+      - metrics_network
 
   # Host metrics
   node-exporter:
@@ -82,7 +82,7 @@ services:
       - '--docker_only'
       - '--store_container_labels=false'
     networks:
-      - web_network
+      - metrics_network
 
   # Collects metrics and serves them to Grafana
   prometheus:
@@ -106,7 +106,7 @@ services:
       # host 9090 forwarded to container 9090 (default Prometheus port)
       - "9090:9090"
     networks:
-      - web_network
+      - metrics_network
 
   # Visualizes logs from Loki
   grafana:
@@ -133,6 +133,6 @@ services:
     ports:
       - "3000:3000"
     networks:
-      - web_network
+      - metrics_network
     depends_on:
       - loki

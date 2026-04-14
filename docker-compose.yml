@@ -140,6 +140,7 @@ services:
     networks:
       - data_network
       - web_network
+      - metrics_network
     deploy:
       replicas: ${REST_REPLICAS}   # Specify the number of replicas for Docker Swarm
       resources:
@@ -400,3 +401,5 @@ networks:
     external: true   # Use an external network
   web_network:
     external: true   # Use an external network
+  metrics_network:
+    external: true   # Shared network for the monitoring stack and API telemetry

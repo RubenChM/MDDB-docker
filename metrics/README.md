@@ -17,8 +17,11 @@ This monitoring stack collects **API logs** and **infrastructure metrics** for v
 
 ## Architecture
 
+- The monitoring services run on a dedicated external Docker network named `metrics_network`.
+- The REST API joins the same network, so it can send logs directly to the OpenTelemetry Collector container by name.
+
 - **API Logs:**  
-   The REST API sends logs directly to the local [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/), which forwards them to a local [Loki](https://grafana.com/oss/loki/) instance. (Future: also forward to a central Loki.)
+   The REST API sends logs directly to the shared [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/) over the `metrics_network`, which forwards them to a local [Loki](https://grafana.com/oss/loki/) instance. (Future: also forward to a central Loki.)
 - **Infrastructure Metrics:**  
    [Prometheus](https://prometheus.io/) scrapes metrics from:
    - **Loki** (log system health)
@@ -53,11 +56,13 @@ REST API ──► OpenTelemetry Collector ──► Loki ──► Grafana
 
 2. **Start the stack:**
     ```bash
-    docker network create web_network 2>/dev/null
-    docker compose up -d
+   docker network create metrics_network 2>/dev/null
+   docker compose up -d
     ```
 
-3. **Configure your API** to send logs to the OpenTelemetry Collector endpoint (`http://localhost:4318/v1/logs`).
+3. **Configure your API** to join `metrics_network` and send logs to the OpenTelemetry Collector endpoint (`http://otel-collector:4318/v1/logs`).
+
+4. **If the API is deployed from the main MDDB compose file**, make sure that compose file also declares and joins the same `metrics_network`.
 
 ---
 
