@@ -3,7 +3,7 @@
 # Place in: /path/to/node/prometheus/prometheus.yml
 
 global:
-  scrape_interval: 30s
+  scrape_interval: 5m
   external_labels:
     node: 'mdposit-dev'          # <- CHANGE: unique name for this node
     owner: 'mdposit'             # <- CHANGE: owner/team name

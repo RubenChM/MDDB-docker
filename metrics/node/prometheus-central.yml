@@ -1,5 +1,5 @@
 global:
-  scrape_interval: 30s
+  scrape_interval: 5m
 
 scrape_configs:
   # Scrape the state of the central Prometheus itself

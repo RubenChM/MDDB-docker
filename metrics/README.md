@@ -3,22 +3,28 @@
 
 This monitoring stack collects **API logs** and **infrastructure metrics** for visualization in Grafana.
 
-## Stack Components
+## Stack Components (Central)
 
-| Component         | Role                                      | How it’s monitored           |
+| Component         | Role                                      | How it's monitored           |
 |-------------------|-------------------------------------------|------------------------------|
-| REST API          | Sends logs to OpenTelemetry Collector      | Logs in Loki                 |
-| OpenTelemetry     | Receives logs, forwards to Loki            | Metrics via Prometheus       |
-| Loki              | Stores and serves logs                     | Metrics via Prometheus       |
-| node-exporter     | Host hardware/OS metrics                   | Scraped by Prometheus        |
-| cAdvisor          | Container metrics                          | Scraped by Prometheus        |
-| Prometheus        | Scrapes metrics, serves to Grafana         | Self-scraped                 |
-| Grafana           | Visualizes logs (Loki) and metrics         | -                            |
+| OpenTelemetry     | Receives logs from all nodes, forwards to Loki | Metrics via Prometheus   |
+| Loki              | Stores and serves logs (all nodes)         | Metrics via Prometheus       |
+| Prometheus        | **Central metrics backend** (scrapes central services and receives remote_write from nodes) | Self-scraped |
+| Grafana           | Visualizes logs (Loki) and metrics (Prometheus) | -                            |
+
+## Per-Node Components (also run on central)
+
+| Component    | Role                                      |
+|--------------|-------------------------------------------|
+| REST API (nodes)  | Sends logs to OpenTelemetry Collector      | 
+| node-exporter | Host hardware/OS metrics                   |
+| cAdvisor     | Container metrics                          |
+| Prometheus Agent | Scrapes local exporters, remote_write to central Prometheus |
 
 ## Architecture
 
 - The monitoring services run on a dedicated external Docker network named `metrics_network`.
-- The REST API joins the same network, so it can send logs directly to the OpenTelemetry Collector container by name.
+- The REST API and Apache joins the same network, so it can send logs directly to the OpenTelemetry Collector container by name.
 
 - **API Logs:**  
    The REST API sends logs directly to the shared [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/) over the `metrics_network`, which forwards them to a local [Loki](https://grafana.com/oss/loki/) instance. (Future: also forward to a central Loki.)
@@ -50,19 +56,24 @@ REST API ──► OpenTelemetry Collector ──► Loki ──► Grafana
 
 ## Setup
 
-1. **Edit configuration files as needed:**
-    - `otel.yaml`: Set the node name under the `resource` processor, e.g. `value: "IRB-DEV"`.
-    - `prometheus.yml`: Set `external_labels.node` to a unique name for this machine, e.g. `node: 'IRB-DEV'`.
+### Central Machine (Monitoring Host)
 
-2. **Start the stack:**
+1. **Create the metrics network:**
     ```bash
-   docker network create metrics_network 2>/dev/null
-   docker compose up -d
+    docker network create metrics_network 2>/dev/null
     ```
 
-3. **Configure your API** to join `metrics_network` and send logs to the OpenTelemetry Collector endpoint (`http://otel-collector:4318/v1/logs`).
+### Per-Node Setup
 
-4. **If the API is deployed from the main MDDB compose file**, make sure that compose file also declares and joins the same `metrics_network`.
+1. **Configure your environment variables:**:
+
+| Variable | Default | Purpose | Example |
+|----------|---------|---------|---------|
+| `OTEL_ENDPOINT` | `http://otel-collector:4318/v1/logs` | REST API logs destination (OTLP/HTTP endpoint) | `http://central-ip:4318/v1/logs` or `https://central-ip:4318/v1/logs` |
+| `PROMETHEUS_MODE` | `central` | Prometheus deployment mode (central or node) | `central` or `node` |
+mpose -f docker-compose.metrics.yml up -d
+
+2. For nodes modify the `external_labels` in `prometheus-node.yml` to include unique identifiers for each node, such as `node`, `owner`, and `environment`. This will help differentiate metrics from different nodes in Grafana.
 
 ---
 
