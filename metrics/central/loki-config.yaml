@@ -32,3 +32,8 @@ storage_config:
   
 compactor:
   working_directory: /loki/compactor
+
+otlp_config:
+  default_resource_attributes_as_index_labels:
+    - service.name
+    - node
