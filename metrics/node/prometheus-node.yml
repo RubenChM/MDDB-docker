@@ -5,9 +5,7 @@
 global:
   scrape_interval: 5m
   external_labels:
-    node: 'mdposit-dev'          # <- CHANGE: unique name for this node
-    owner: 'mdposit'             # <- CHANGE: owner/team name
-    environment: 'development'   # <- CHANGE: dev/staging/prod
+    node: 'irb-dev'          # <- CHANGE: unique name for this node
 
 scrape_configs:
   # Scrape node-exporter for host hardware metrics
