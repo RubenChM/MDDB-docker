@@ -89,8 +89,6 @@ curl http://127.0.0.1:3100/ready
 # Check Prometheus disk usage:
 docker exec -it prometheus du -sh /prometheus
 
-# Check Loki disk usage:
-docker exec -it loki du -sh /loki
 
 # Check logs for errors:
 docker logs prometheus 2>&1 | grep -i "error"

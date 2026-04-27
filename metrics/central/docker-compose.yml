@@ -52,9 +52,8 @@ services:
       - ./provisioning:/etc/grafana/provisioning  # auto-provisions the data source
       - ./provisioning/dashboards:/etc/grafana/provisioning/dashboards  # mount dashboards
     environment:
-      - GF_SERVER_ROOT_URL=%(protocol)s://%(domain)s/grafana/
+      - GF_SERVER_ROOT_URL=https://irb-dev.mddbr.eu/grafana
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
-      - GF_SERVER_ENFORCE_DOMAIN=false
       - GF_AUTH_GOOGLE_ENABLED=${GF_AUTH_GOOGLE_ENABLED:-false}
       - GF_AUTH_GOOGLE_CLIENT_ID=${GF_AUTH_GOOGLE_CLIENT_ID:-}
       - GF_AUTH_GOOGLE_CLIENT_SECRET=${GF_AUTH_GOOGLE_CLIENT_SECRET:-}
@@ -63,6 +62,12 @@ services:
       - GF_AUTH_GITHUB_CLIENT_ID=${GF_AUTH_GITHUB_CLIENT_ID:-}
       - GF_AUTH_GITHUB_CLIENT_SECRET=${GF_AUTH_GITHUB_CLIENT_SECRET:-}
       - GF_AUTH_GITHUB_ALLOWED_ORGANIZATIONS=${GF_AUTH_GITHUB_ALLOWED_ORGANIZATIONS:-}
+      - GF_SMTP_ENABLED=${GF_SMTP_ENABLED:-false}
+      - GF_SMTP_HOST=${GF_SMTP_HOST:-}
+      - GF_SMTP_USER=${GF_SMTP_USER:-}
+      - GF_SMTP_PASSWORD=${GF_SMTP_PASSWORD:-}
+      - GF_SMTP_FROM_ADDRESS=${GF_SMTP_FROM_ADDRESS:-}
+      - GF_SMTP_FROM_NAME=${GF_SMTP_FROM_NAME:-}
     ports:
       - "3000:3000"
     networks:
