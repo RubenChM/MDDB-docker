@@ -221,7 +221,7 @@ def deploy_stack(rm):
         db_bck = input("Do you want a backup for the database? (y/n): ")
         if db_bck.lower() == "y":
             env_vars["DB_BACKUP_REPLICAS"] = 1
-            env_vars["DB_BACKUP_INTERVAL"] = input("Enter the interval between backups in seconds (default, one day: 86400): ") or "86400"
+            env_vars["DB_BACKUP_INTERVAL"] = input("Enter the interval between backups in seconds (default, one week: 604800): ") or "604800"
         else:
             env_vars["DB_BACKUP_REPLICAS"] = 0
             env_vars["DB_BACKUP_INTERVAL"] = 0
