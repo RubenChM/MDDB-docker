@@ -21,7 +21,7 @@ def command_exists(cmd):
         return True
     except subprocess.CalledProcessError:
         return False
-    except FileNotFoundError:
+    except (FileNotFoundError, PermissionError):
         return False
 
 
