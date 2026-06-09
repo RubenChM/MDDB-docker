@@ -133,6 +133,8 @@ services:
         DB_AUTHSOURCE: ${DB_AUTHSOURCE}
         REST_INNER_PORT: ${REST_INNER_PORT}
         HOST: ${REST_URL}
+        NODE_NAME: ${NODE}
+        REST_OTEL_ENDPOINT: ${REST_OTEL_ENDPOINT}
     depends_on:
       - mongodb
     ports:
