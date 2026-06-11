@@ -13,7 +13,7 @@ services:
         MCP_ROOT_PATH: ${MCP_ROOT_PATH}   # Build argument for the root path
         REST_INNER_PORT: ${REST_INNER_PORT}   # Build argument for the REST API inner port
         MCP_DB_NAME: ${MCP_DB_NAME}   # Build argument for the MongoDB database name
-        CLIENT_URL: ${MINIO_PROTOCOL}://${MINIO_URL}   # Build argument for the client URL
+        CLIENT_URL: ${MINIO_PROTOCOL}:\/\/${MINIO_URL}   # Build argument for the client URL
         MCP_ACCESSION: ${MCP_ACCESSION}   # Build argument for the MCP accession URL
     depends_on:
       - mongodb
