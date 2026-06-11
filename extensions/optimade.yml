@@ -23,7 +23,6 @@ services:
     ports:
       - "${OPTIMADE_OUTER_PORT}:${OPTIMADE_INNER_PORT}"   # port mapping
     networks:
-      - data_network
       - web_network
     deploy:
       replicas: ${OPTIMADE_REPLICAS}   # Specify the number of replicas for Docker Swarm
