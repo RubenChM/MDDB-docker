@@ -2,6 +2,8 @@ import os
 import gradio as gr
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
+from starlette.responses import Response
+import re
 
 
 class RootPathMiddleware(BaseHTTPMiddleware):
@@ -12,6 +14,39 @@ class RootPathMiddleware(BaseHTTPMiddleware):
             # Update ASGI scope's root_path for this request
             request.scope["root_path"] = forwarded_path
         return await call_next(request)
+
+
+class AssetPathRewriteMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        
+        # Get the root path from headers
+        root_path = request.headers.get("X-Forwarded-Path", "")
+        
+        # Only rewrite HTML responses
+        if root_path and "text/html" in response.headers.get("content-type", ""):
+            # Read response body
+            body = b""
+            async for chunk in response.body_iterator:
+                body += chunk
+            
+            # Decode and rewrite paths
+            html = body.decode("utf-8")
+            # Replace /static/ and /gradio_api/ and other server paths with root_path prefix
+            html = re.sub(
+                r'(["\'])/(?:static|gradio_api|file|config)',
+                r'\1' + root_path + r'/\g<2>',
+                html
+            )
+            
+            # Return modified response
+            response = Response(
+                content=html,
+                status_code=response.status_code,
+                headers=dict(response.headers)
+            )
+        
+        return response
 
 
 # Internal service URL for Docker Swarm communication
@@ -42,7 +77,8 @@ app = gr.load_openapi(
     auth_token=os.getenv("OPENAPI_AUTH_TOKEN")
 )
 
-# Add middleware to handle X-Forwarded-Path
+# Add middleware to handle X-Forwarded-Path and rewrite asset URLs
+app.app.add_middleware(AssetPathRewriteMiddleware)
 app.app.add_middleware(RootPathMiddleware)
 
 app.launch(
