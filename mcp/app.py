@@ -49,6 +49,6 @@ gr.load_openapi(
 ).launch(
     server_name="0.0.0.0",
     server_port=int(os.getenv("MCP_PORT", 8000)),
-    root_path=f'/{os.getenv("MCP_ROOT_PATH", "mcp")}',
+    root_path=f'/{os.getenv("MCP_ROOT_PATH", "mcp_rest")}',
     mcp_server=True
 )
