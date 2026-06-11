@@ -1,1 +1,2 @@
 gradio[mcp]>=5.38.2
+starlette>=0.36
