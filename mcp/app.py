@@ -8,10 +8,10 @@ gr.load_openapi(
     openapi_spec="./swagger.json",
     base_url=base_url,
     paths=[
-        "/projects",
-        "/projects/options",
-        "/projects/summary",
-        "/projects/{projectAccessionOrID}",
+        "^/projects$",
+        "^/projects/options$",
+        "^/projects/summary$",
+        "^/projects/[^/]+$",
     ],
     methods=["GET"],
     auth_token=os.getenv("OPENAPI_AUTH_TOKEN")
