@@ -20,7 +20,6 @@ services:
     ports:
       - "${MCP_OUTER_PORT}:${MCP_INNER_PORT}"   # port mapping
     networks:
-      - data_network
       - web_network
     deploy:
       replicas: ${MCP_REPLICAS}   # Specify the number of replicas for Docker Swarm
