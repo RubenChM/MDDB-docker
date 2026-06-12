@@ -9,11 +9,11 @@ ARG MCP_ACCESSION
 
 WORKDIR /app
 
-# COPY swagger.json .
+COPY swagger.json .
 
-# RUN sed -i "s/\$DATABASE/${MCP_DB_NAME}/g" swagger.json && \
-#     sed -i "s/\$CLIENT_URL/${CLIENT_URL}/g" swagger.json && \
-#     sed -i "s/\$ACCESSION/${MCP_ACCESSION}/g" swagger.json
+RUN sed -i "s/\$DATABASE/${MCP_DB_NAME}/g" swagger.json && \
+    sed -i "s/\$CLIENT_URL/${CLIENT_URL}/g" swagger.json && \
+    sed -i "s/\$ACCESSION/${MCP_ACCESSION}/g" swagger.json
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
@@ -23,10 +23,7 @@ COPY app.py .
 ENV MCP_PORT=${MCP_INNER_PORT}
 ENV MCP_ROOT_PATH=${MCP_ROOT_PATH}
 ENV REST_INNER_PORT=${REST_INNER_PORT}
-ENV MCP_DB_NAME=${MCP_DB_NAME}
-ENV CLIENT_URL=${CLIENT_URL}
-ENV MCP_ACCESSION=${MCP_ACCESSION}
 
 EXPOSE ${MCP_INNER_PORT}
 
-CMD ["sh", "-c", "if [ -f /data/swagger.json ]; then sed -i \"s|\\$DATABASE|${MCP_DB_NAME}|g; s|\\$CLIENT_URL|${CLIENT_URL}|g; s|\\$ACCESSION|${MCP_ACCESSION}|g\" /data/swagger.json; fi; python app.py"]
+CMD ["python", "app.py"]

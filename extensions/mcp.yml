@@ -17,8 +17,6 @@ services:
         MCP_ACCESSION: ${MCP_ACCESSION}   # Build argument for the MCP accession URL
     depends_on:
       - mongodb
-    volumes:
-      - ./mcp/swagger.json:/data/swagger.json   # path to Swagger JSON file
     ports:
       - "${MCP_OUTER_PORT}:${MCP_INNER_PORT}"   # port mapping
     networks:
