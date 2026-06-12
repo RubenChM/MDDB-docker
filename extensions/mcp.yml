@@ -18,7 +18,7 @@ services:
     depends_on:
       - mongodb
     volumes:
-      - ./swagger.json:/data/swagger.json   # path to Swagger JSON file
+      - ./mcp/swagger.json:/data/swagger.json   # path to Swagger JSON file
     ports:
       - "${MCP_OUTER_PORT}:${MCP_INNER_PORT}"   # port mapping
     networks:
