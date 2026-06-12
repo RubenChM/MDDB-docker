@@ -207,35 +207,25 @@
     },
     "/projects/{projectAccessionOrID}": {
       "get": {
-        "summary": "Get a project by its accession or identifier.",
-        "description": "Get a $DATABASE project (simulations and related data and analyses) by\nits accession or identifier.",
         "parameters": [
           {
-            "$ref": "#/components/parameters/projectAccessionOrID"
+            "name": "projectAccessionOrID",
+            "in": "path",
+            "required": true,
+            "description": "Project accession or identifier",
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "raw",
             "in": "query",
-            "description": "Set if the response is not to be formatted, but sent as it is stored in the database.",
             "schema": {
               "type": "boolean",
               "default": false
             }
           }
-        ],
-        "tags": ["projects"],
-        "responses": {
-          "200": {
-            "description": "a project",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProjectMD"
-                }
-              }
-            }
-          }
-        }
+        ]
       }
     },
     "/projects/{projectAccessionOrID}/topology": {
@@ -244,7 +234,7 @@
         "description": "Get a json object containing data related to atom, residue and chains (e.g. atom names, residue numbers).",
         "parameters": [
           {
-            "$ref": "#/components/parameters/projectAccessionOrID"
+            "$ref": "#/definitions/arguments/projectAccessionOrID"
           }
         ],
         "tags": ["topology"],
@@ -269,7 +259,7 @@
         "produces": ["chemical/x-pdb"],
         "parameters": [
           {
-            "$ref": "#/components/parameters/projectAccessionOrID"
+            "$ref": "#/definitions/arguments/projectAccessionOrID"
           },
           {
             "name": "selection",
@@ -326,7 +316,7 @@
         "produces": ["chemical/x-pdb"],
         "parameters": [
           {
-            "$ref": "#/components/parameters/projectAccessionOrID"
+            "$ref": "#/definitions/arguments/projectAccessionOrID"
           },
           {
             "name": "selection",
@@ -385,7 +375,7 @@
         "produces": ["application/octet-stream", "text/mdcrd", "application/xtc", "application/trr"],
         "parameters": [
           {
-            "$ref": "#/components/parameters/projectAccessionOrID"
+            "$ref": "#/definitions/arguments/projectAccessionOrID"
           },
           {
             "name": "format",
@@ -501,7 +491,7 @@
         "produces": ["application/octet-stream", "text/mdcrd", "application/xtc", "application/trr"],
         "parameters": [
           {
-            "$ref": "#/components/parameters/projectAccessionOrID"
+            "$ref": "#/definitions/arguments/projectAccessionOrID"
           },
           {
             "name": "format",
@@ -618,7 +608,7 @@
         "description": "Get a data related to the project references including uniprots, inchikeys, etc.",
         "parameters": [
           {
-            "$ref": "#/components/parameters/projectAccessionOrID"
+            "$ref": "#/definitions/arguments/projectAccessionOrID"
           }
         ],
         "tags": ["references"],
@@ -1371,7 +1361,7 @@
         "description": "Get the list of files for a specific $DATABASE project MD.",
         "parameters": [
           {
-            "$ref": "#/components/parameters/projectAccessionOrID"
+            "$ref": "#/definitions/arguments/projectAccessionOrID"
           }
         ],
         "tags": ["files"],
@@ -1396,7 +1386,7 @@
         "produces": ["application/octet-stream", "chemical/x-pdb"],
         "parameters": [
           {
-            "$ref": "#/components/parameters/projectAccessionOrID"
+            "$ref": "#/definitions/arguments/projectAccessionOrID"
           },
           {
             "name": "filename",
@@ -1462,7 +1452,7 @@
         "description": "Get the list of file descriptors for a specific $DATABASE project MD.",
         "parameters": [
           {
-            "$ref": "#/components/parameters/projectAccessionOrID"
+            "$ref": "#/definitions/arguments/projectAccessionOrID"
           }
         ],
         "tags": ["filenotes"],
@@ -1490,7 +1480,7 @@
         "produces": ["application/octet-stream", "chemical/x-pdb"],
         "parameters": [
           {
-            "$ref": "#/components/parameters/projectAccessionOrID"
+            "$ref": "#/definitions/arguments/projectAccessionOrID"
           },
           {
             "name": "filename",
@@ -1520,7 +1510,7 @@
         "description": "Get a list with available analyses in a specific $DATABASE project.",
         "parameters": [
           {
-            "$ref": "#/components/parameters/projectAccessionOrID"
+            "$ref": "#/definitions/arguments/projectAccessionOrID"
           }
         ],
         "tags": ["analyses"],
@@ -1544,7 +1534,7 @@
         "description": "Get a specific analysis for a specific $DATABASE project by its name.",
         "parameters": [
           {
-            "$ref": "#/components/parameters/projectAccessionOrID"
+            "$ref": "#/definitions/arguments/projectAccessionOrID"
           },
           {
             "name": "analysisName",
@@ -1615,7 +1605,7 @@
         "description": "Get the list of sequence chains for a specific $DATABASE project.",
         "parameters": [
           {
-            "$ref": "#/components/parameters/projectAccessionOrID"
+            "$ref": "#/definitions/arguments/projectAccessionOrID"
           }
         ],
         "tags": ["chains"],
@@ -1639,7 +1629,7 @@
         "description": "Get a specific sequence chain for a specific $DATABASE project by its\nname (case-sensitive). It might include sequence analyses run on\nexternal services (InterProScan and HMMer)",
         "parameters": [
           {
-            "$ref": "#/components/parameters/projectAccessionOrID"
+            "$ref": "#/definitions/arguments/projectAccessionOrID"
           },
           {
             "name": "chainName",
@@ -1812,18 +1802,6 @@
     }
   },
   "components": {
-    "parameters": {
-      "projectAccessionOrID": {
-        "name": "projectAccessionOrID",
-        "in": "path",
-        "required": true,
-        "description": "Project accession or identifier.<br>\nA project will always have a unique identifier (even if unpublished and\nin the development version of the API).<br>\nWhen published, it will be assigned a never-changing unique\nuser-friendly accession such as $ACCESSION.<br>\nYou can use either to access the corresponding data, even if the\n**accession is recommended**",
-        "schema": {
-          "type": "string"
-        },
-        "example": "$ACCESSION"
-      }
-    },
     "schemas": {
       "ProjectMD": {
         "type": "object",
