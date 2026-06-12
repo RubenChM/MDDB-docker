@@ -234,7 +234,13 @@
         "description": "Get a json object containing data related to atom, residue and chains (e.g. atom names, residue numbers).",
         "parameters": [
           {
-            "$ref": "#/definitions/arguments/projectAccessionOrID"
+            "name": "projectAccessionOrID",
+            "in": "path",
+            "required": true,
+            "description": "Project accession or identifier",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "tags": ["topology"],

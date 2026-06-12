@@ -12,6 +12,7 @@ gr.load_openapi(
         "^/projects/options$",
         "^/projects/summary$",
         "^/projects/\\{projectAccessionOrID\\}$",
+        "^/projects/\\{projectAccessionOrID\\}/topology$"
     ],
     methods=["GET"],
     auth_token=os.getenv("OPENAPI_AUTH_TOKEN")
