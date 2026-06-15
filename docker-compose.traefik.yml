@@ -1,0 +1,458 @@
+services:
+  # apache:
+  #   image: apache_image   # name of apache image
+  #   build:
+  #     context: ./apache   # folder to search Dockerfile for this image
+  #     # network: host  # Only during build
+  #     args:
+  #       APACHE_HTTP_INNER_PORT: ${APACHE_HTTP_INNER_PORT}
+  #       APACHE_HTTPS_INNER_PORT: ${APACHE_HTTPS_INNER_PORT}
+  #       APACHE_HTTP_OUTER_PORT: ${APACHE_HTTP_OUTER_PORT}
+  #       APACHE_HTTPS_OUTER_PORT: ${APACHE_HTTPS_OUTER_PORT}
+  #       APACHE_MINIO_OUTER_PORT: ${APACHE_MINIO_OUTER_PORT}
+  #       APACHE_MINIO_INNER_PORT: ${APACHE_MINIO_INNER_PORT}
+  #       CLIENT_INNER_PORT: ${CLIENT_INNER_PORT}
+  #       REST_INNER_PORT: ${REST_INNER_PORT}
+  #       VRE_LITE_INNER_PORT: ${VRE_LITE_INNER_PORT}
+  #       MINIO_UI_INNER_PORT: ${MINIO_UI_INNER_PORT}
+  #       MINIO_API_INNER_PORT: ${MINIO_API_INNER_PORT}
+  #       SERVER_URL: ${MINIO_URL}
+  #       SSL_CERTIFICATE: ${SSL_CERTIFICATE}
+  #       SSL_CERT_KEY: ${SSL_CERT_KEY}
+  #   volumes:
+  #     - certs_volume:/usr/local/apache2/conf/ssl   # path to SSL certificates
+  #   ports:
+  #     - "${APACHE_HTTP_OUTER_PORT}:${APACHE_HTTP_INNER_PORT}"   # http port mapping
+  #     - "${APACHE_HTTPS_OUTER_PORT}:${APACHE_HTTPS_INNER_PORT}"   # https port mapping
+  #     - "${APACHE_MINIO_OUTER_PORT}:${APACHE_MINIO_INNER_PORT}"      # minio console port mapping
+  #   networks:
+  #     - traefik-public
+  #   deploy:
+  #     replicas: ${APACHE_REPLICAS}  # Ensure this service is not deployed by default as it is a one-time task
+  #     resources:
+  #       limits:
+  #         cpus: ${APACHE_CPU_LIMIT}   # Specify the limit number of CPUs
+  #         memory: ${APACHE_MEMORY_LIMIT}   # Specify the limit memory
+  #       reservations:
+  #         cpus: ${APACHE_CPU_RESERVATION}   # Specify the reserved number of CPUs
+  #         memory: ${APACHE_MEMORY_RESERVATION}   # Specify the reserved memory
+  #     restart_policy:
+  #       condition: any   # Restart always
+
+  loader:
+    image: loader_image   # name of loader image
+    build:
+      context: ./loader   # folder to search Dockerfile for this image
+      # network: host  # Only during build
+      args:
+        DB_SERVER: ${DB_SERVER}
+        DB_PORT: ${DB_OUTER_PORT}
+        DB_NAME: ${DB_NAME}
+        DB_AUTH_USER: ${LOADER_DB_LOGIN}
+        DB_AUTH_PASSWORD: ${LOADER_DB_PASSWORD}
+        DB_AUTHSOURCE: ${DB_AUTHSOURCE}
+    volumes:
+      - loader_volume:/data   # path where the loader will look for files
+    networks:
+      - data_network
+    deploy:
+      replicas: ${LOADER_REPLICAS}  # Ensure this service is not deployed by default as it is a one-time task
+      resources:
+        limits:
+          cpus: ${LOADER_CPU_LIMIT}   # Specify the limit number of CPUs
+          memory: ${LOADER_MEMORY_LIMIT}   # Specify the limit memory
+        reservations:
+          cpus: ${LOADER_CPU_RESERVATION}   # Specify the reserved number of CPUs
+          memory: ${LOADER_MEMORY_RESERVATION}   # Specify the reserved memory
+
+  workflow:
+    image: workflow_image
+    build:
+      context: ./workflow   # folder to search Dockerfile for this image
+      # network: host  # Only during build
+      args:
+        MINIO_USER: ${MINIO_USER}
+        MINIO_PASSWORD: ${MINIO_PASSWORD}
+        MINIO_API_PORT: ${MINIO_API_INNER_PORT}
+    cap_add:
+      - SYS_ADMIN
+    devices:
+      - /dev/fuse
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - workflow_volume:/data  # path where the workflow will look for files
+    networks:
+      - minio_network
+    deploy:
+      replicas: ${WORKFLOW_REPLICAS}  # Ensure this service is not deployed by default as it is a one-time task
+      resources:
+        limits:
+          cpus: ${WORKFLOW_CPU_LIMIT}   # Specify the limit number of CPUs
+          memory: ${WORKFLOW_MEMORY_LIMIT}   # Specify the limit memory
+        reservations:
+          cpus: ${WORKFLOW_CPU_RESERVATION}   # Specify the reserved number of CPUs
+          memory: ${WORKFLOW_MEMORY_RESERVATION}   # Specify the reserved memory
+
+  client:
+    image: client_image
+    build:
+      context: ./client  # folder to search Dockerfile for this image
+      # network: host  # Only during build
+      args:
+        CLIENT_INNER_PORT: ${CLIENT_INNER_PORT}
+    # ports:
+    #   - "${CLIENT_OUTER_PORT}:${CLIENT_INNER_PORT}"  # port mapping
+    networks:
+      - traefik-public
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.swarm.network=traefik-public
+        - traefik.http.services.client.loadbalancer.server.port=${CLIENT_INNER_PORT}
+        - traefik.http.middlewares.client-redirect.redirectregex.regex=^(.*)/client-mddb$$
+        - traefik.http.middlewares.client-redirect.redirectregex.replacement=$${1}/client-mddb/
+        - traefik.http.middlewares.client-redirect.redirectregex.permanent=true
+        - traefik.http.routers.client.rule=PathPrefix(`/client-mddb`)
+        - traefik.http.routers.client.entrypoints=websecure
+        - traefik.http.routers.client.service=client
+        - traefik.http.routers.client.middlewares=client-redirect
+        - traefik.http.routers.client.tls.domains[0].main=mmb.irbbarcelona.org
+        - traefik.http.routers.client.tls.certresolver=harica
+      replicas: ${CLIENT_REPLICAS}   # Specify the number of replicas for Docker Swarm
+      resources:
+        limits:
+          cpus: ${CLIENT_CPU_LIMIT}   # Specify the limit number of CPUs
+          memory: ${CLIENT_MEMORY_LIMIT}   # Specify the limit memory
+        reservations:
+          cpus: ${CLIENT_CPU_RESERVATION}   # Specify the reserved number of CPUs
+          memory: ${CLIENT_MEMORY_RESERVATION}   # Specify the reserved memory
+      restart_policy:
+        condition: any   # Restart always
+      update_config:
+        order: start-first  # Priority over other services
+
+  rest:
+    image: rest_image
+    build:
+      context: ./rest   # folder to search Dockerfile for this image
+      # network: host  # Only during build
+      args:
+        DB_SERVER: ${DB_SERVER}
+        DB_PORT: ${DB_OUTER_PORT}
+        DB_NAME: ${DB_NAME}
+        DB_AUTH_USER: ${REST_DB_LOGIN}
+        DB_AUTH_PASSWORD: ${REST_DB_PASSWORD}
+        DB_AUTHSOURCE: ${DB_AUTHSOURCE}
+        REST_INNER_PORT: ${REST_INNER_PORT}
+        HOST: ${REST_URL}
+        NODE_NAME: ${NODE}
+        REST_OTEL_ENDPOINT: ${REST_OTEL_ENDPOINT}
+    depends_on:
+      - mongodb
+    # ports:
+    #   - "${REST_OUTER_PORT}:${REST_INNER_PORT}"   # port mapping
+    networks:
+      - data_network
+      - traefik-public
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.swarm.network=traefik-public
+        - traefik.http.services.rest.loadbalancer.server.port=${REST_INNER_PORT}
+        - traefik.http.middlewares.rest-redirect.redirectregex.regex=^(.*)/rest-mddb$$
+        - traefik.http.middlewares.rest-redirect.redirectregex.replacement=$${1}/rest-mddb/
+        - traefik.http.middlewares.rest-redirect.redirectregex.permanent=true
+        - traefik.http.routers.rest.rule=PathPrefix(`/rest-mddb`)
+        - traefik.http.routers.rest.entrypoints=websecure
+        - traefik.http.routers.rest.service=rest
+        - traefik.http.routers.rest.middlewares=rest-redirect
+        - traefik.http.routers.rest.tls.domains[0].main=mmb.irbbarcelona.org
+        - traefik.http.routers.rest.tls.certresolver=harica
+      replicas: ${REST_REPLICAS}   # Specify the number of replicas for Docker Swarm
+      resources:
+        limits:
+          cpus: ${REST_CPU_LIMIT}   # Specify the limit number of CPUs
+          memory: ${REST_MEMORY_LIMIT}   # Specify the limit memory
+        reservations:
+          cpus: ${REST_CPU_RESERVATION}   # Specify the reserved number of CPUs
+          memory: ${REST_MEMORY_RESERVATION}   # Specify the reserved memory
+      restart_policy:
+        condition: any   # Restart always
+      update_config:
+        order: start-first  # Priority over other services
+
+  mongodb:
+    image: mongo:6
+    user: "${MONGO_CONTAINER_USER}:${MONGO_CONTAINER_GROUP}"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_PORT: ${DB_OUTER_PORT}
+      MONGO_INITDB_DATABASE: ${DB_NAME}
+      LOADER_DB_LOGIN: ${LOADER_DB_LOGIN}
+      LOADER_DB_PASSWORD: ${LOADER_DB_PASSWORD}
+      MONGO_VRE_DATABASE: ${VRE_LITE_MONGO_DATABASE}
+      VRE_DB_LOGIN: ${VRE_LITE_DB_LOGIN}
+      VRE_DB_PASSWORD: ${VRE_LITE_DB_PASSWORD}
+      REST_DB_LOGIN: ${REST_DB_LOGIN}
+      REST_DB_PASSWORD: ${REST_DB_PASSWORD}
+    volumes:
+      - db_volume:/data/db  # path where the database will be stored (outside the container, in the host machine)
+      - ./mongodb/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro # path to the template initialization script
+    networks:
+      - data_network
+    deploy:
+      replicas: ${DB_REPLICAS}   # Specify the number of replicas for Docker Swarm
+      resources:
+        limits:
+          cpus: ${DB_CPU_LIMIT}    # Specify the limit number of CPUs
+          memory: ${DB_MEMORY_LIMIT}   # Specify the limit memory
+        reservations:
+          cpus: ${DB_CPU_RESERVATION}   # Specify the reserved number of CPUs
+          memory: ${DB_MEMORY_RESERVATION}   # Specify the reserved memory
+      restart_policy:
+        condition: on-failure   # Restart only on failure
+
+  mongo-backup:
+    image: mongo
+    command: >
+      bash -c "sh /backup_script.sh"
+    volumes:
+      - ${DB_BACKUP_VOLUME_PATH}:/backup
+      - ./mongodb/backup_script.sh:/backup_script.sh:ro
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_PORT: ${DB_OUTER_PORT}
+      MONGO_INITDB_DATABASE: ${DB_AUTHSOURCE}
+      DB_HOST: ${DB_SERVER}
+      BACKUP_DIR: /backup
+      RETENTION_COUNT: ${DB_BACKUP_RETENTION_COUNT}
+      BACKUP_INTERVAL: ${DB_BACKUP_INTERVAL}
+    networks:
+      - data_network
+    depends_on:
+      - mongodb
+    deploy:
+      replicas: ${DB_BACKUP_REPLICAS}
+      resources:
+        limits:
+          cpus: ${DB_BACKUP_CPU_LIMIT}    # Specify the limit number of CPUs
+          memory: ${DB_BACKUP_MEMORY_LIMIT}   # Specify the limit memory
+        reservations:
+          cpus: ${DB_BACKUP_CPU_RESERVATION}   # Specify the reserved number of CPUs
+          memory: ${DB_BACKUP_MEMORY_RESERVATION}   # Specify the reserved memory
+      restart_policy:
+        condition: on-failure   # Restart only on failure
+
+  minio:
+    image: minio/minio
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+      - MINIO_BROWSER_REDIRECT_URL=${MINIO_BROWSER_REDIRECT_URL}  # Set the base URL for the Minio console
+      - MINIO_API_INNER_PORT=${MINIO_API_INNER_PORT}
+      - MINIO_UI_INNER_PORT=${MINIO_UI_INNER_PORT}
+      - MINIO_USER=${MINIO_USER}
+      - MINIO_PASSWORD=${MINIO_PASSWORD}
+    volumes:
+      # paths where minio will store the data in object storage format (outside the container, in the host machine)
+      - minio_volume1:/mnt/disk1   
+      # - minio_volume2:/mnt/disk2
+      # - minio_volume3:/mnt/disk3
+      # - minio_volume4:/mnt/disk4
+      - ./minio/init-minio.sh:/entrypoint.sh # Mount the initialization script
+    # ports:
+    #   - "${MINIO_API_OUTER_PORT}:${MINIO_API_INNER_PORT}"
+    #   - "${MINIO_UI_INNER_PORT}:${MINIO_UI_INNER_PORT}"   # port for the minio webUI (only for development)
+    networks:
+      - minio_network
+      - traefik-public
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.swarm.network=traefik-public
+        - traefik.http.services.minio.loadbalancer.server.port=${MINIO_UI_INNER_PORT}
+        - traefik.http.middlewares.minio-redirect.redirectregex.regex=^(.*)/minio-mddb$$
+        - traefik.http.middlewares.minio-redirect.redirectregex.replacement=$${1}/minio-mddb/
+        - traefik.http.middlewares.minio-redirect.redirectregex.permanent=true
+        - traefik.http.routers.minio.rule=PathPrefix(`/minio-mddb`)
+        - traefik.http.routers.minio.entrypoints=websecure
+        - traefik.http.routers.minio.service=minio
+        - traefik.http.routers.minio.middlewares=minio-redirect
+        - traefik.http.routers.minio.tls.domains[0].main=mmb.irbbarcelona.org
+        - traefik.http.routers.minio.tls.certresolver=harica
+      replicas: ${MINIO_REPLICAS}   # Specify the number of replicas for Docker Swarm
+      placement:
+        max_replicas_per_node: ${MINIO_REPLICAS}   # Specify the maximum number of replicas per node
+      resources:
+        limits:
+          cpus: ${MINIO_CPU_LIMIT}    # Specify the limit number of CPUs
+          memory: ${MINIO_MEMORY_LIMIT}   # Specify the limit memory
+        reservations:
+          cpus: ${MINIO_CPU_RESERVATION}   # Specify the reserved number of CPUs
+          memory: ${MINIO_MEMORY_RESERVATION}   # Specify the reserved memory
+      restart_policy:
+        condition: on-failure   # Restart only on failure
+    hostname: minio
+    entrypoint: ["/entrypoint.sh"]   # Run the initialization script
+    healthcheck:  # Health check for the minio service
+      test: ["CMD", "curl", "-f", "http://localhost:${MINIO_API_INNER_PORT}/minio/health/live"]
+      interval: 10s
+      timeout: 2s
+      retries: 5
+
+  vre_lite:
+    image: vre_lite_image 
+    build:
+      context: ./vre_lite
+      # network: host  # Only during build
+      args:
+        MINIO_API_PORT: ${MINIO_API_INNER_PORT}
+        VRE_LITE_INNER_PORT: ${VRE_LITE_INNER_PORT}
+        VRE_LITE_BASE_URL_DEVELOPMENT: ${VRE_LITE_BASE_URL_DEVELOPMENT}
+        VRE_LITE_BASE_URL_STAGING: ${VRE_LITE_BASE_URL_STAGING}
+        VRE_LITE_BASE_URL_PRODUCTION: ${VRE_LITE_BASE_URL_PRODUCTION}
+        VRE_LITE_LOG_PATH: ${VRE_LITE_LOG_PATH}
+        VRE_LITE_MAX_FILE_SIZE: ${VRE_LITE_MAX_FILE_SIZE}
+        VRE_LITE_TIME_DIFF: ${VRE_LITE_TIME_DIFF}
+        MINIO_PROTOCOL: ${MINIO_PROTOCOL}
+        MINIO_URL: ${MINIO_URL}
+        MINIO_PORT: ${APACHE_MINIO_OUTER_PORT}
+        MINIO_USER: ${MINIO_USER}
+        MINIO_PASSWORD: ${MINIO_PASSWORD}
+        DB_USER: ${VRE_LITE_DB_LOGIN}
+        DB_PASS: ${VRE_LITE_DB_PASSWORD}
+        DB_SERVER: ${VRE_LITE_DB_SERVER}
+        DB_PORT: ${VRE_LITE_DB_OUTER_PORT}
+        DB_NAME: ${VRE_LITE_MONGO_DATABASE}
+        PAT: ${GH_PAT}
+        NODE_NAME: ${NODE}
+        MINIO_ADDRESS: ${MINIO_ADDRESS}
+    volumes:
+      - vre_lite_log_volume:/vre_lite
+      - /var/run/docker.sock:/var/run/docker.sock
+    # ports:
+    #   - "${VRE_LITE_OUTER_PORT}:${VRE_LITE_INNER_PORT}"
+    networks:
+      - minio_network
+      - traefik-public
+      - data_network
+    depends_on:
+      - minio
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.swarm.network=traefik-public
+        - traefik.http.services.vrelite.loadbalancer.server.port=${VRE_LITE_INNER_PORT}
+        - traefik.http.middlewares.vrelite-redirect.redirectregex.regex=^(.*)/vrelite-mddb$$
+        - traefik.http.middlewares.vrelite-redirect.redirectregex.replacement=$${1}/vrelite-mddb/
+        - traefik.http.middlewares.vrelite-redirect.redirectregex.permanent=true
+        - traefik.http.routers.vrelite.rule=PathPrefix(`/vrelite-mddb`)
+        - traefik.http.routers.vrelite.entrypoints=websecure
+        - traefik.http.routers.vrelite.service=vrelite
+        - traefik.http.routers.vrelite.middlewares=vrelite-redirect
+        - traefik.http.routers.vrelite.tls.domains[0].main=mmb.irbbarcelona.org
+        - traefik.http.routers.vrelite.tls.certresolver=harica
+      replicas: ${VRE_LITE_REPLICAS}   # Specify the number of replicas for Docker Swarm
+      resources:
+        limits:
+          cpus: ${VRE_LITE_CPU_LIMIT}   # Specify the limit number of CPUs
+          memory: ${VRE_LITE_MEMORY_LIMIT}   # Specify the limit memory
+        reservations:
+          cpus: ${VRE_LITE_CPU_RESERVATION}   # Specify the reserved number of CPUs
+          memory: ${VRE_LITE_MEMORY_RESERVATION}   # Specify the reserved memory
+      restart_policy:
+        condition: any   # Restart always
+      update_config:
+        order: start-first  # Priority over other services
+
+  utils:
+    image: utils_image   # name of utils image
+    build:
+      context: ./utils   # folder to search Dockerfile for this image
+    environment:
+      DB_SERVER: ${VRE_LITE_DB_SERVER}
+      DB_PORT: ${VRE_LITE_DB_OUTER_PORT}
+      DB_VRE_NAME: ${VRE_LITE_MONGO_DATABASE}
+      DB_VRE_AUTH_USER: ${VRE_LITE_DB_LOGIN}
+      DB_VRE_AUTH_PASSWORD: ${VRE_LITE_DB_PASSWORD}
+      DB_VRE_AUTHSOURCE: ${VRE_LITE_MONGO_DATABASE}
+    networks:
+      - data_network
+    deploy:
+      replicas: ${UTILS_REPLICAS}  # Ensure this service is not deployed by default as it is a one-time task
+      resources:
+        limits:
+          cpus: ${UTILS_CPU_LIMIT}   # Specify the limit number of CPUs
+          memory: ${UTILS_MEMORY_LIMIT}   # Specify the limit memory
+        reservations:
+          cpus: ${UTILS_CPU_RESERVATION}   # Specify the reserved number of CPUs
+          memory: ${UTILS_MEMORY_RESERVATION}   # Specify the reserved memory
+
+volumes:
+  db_volume:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DB_VOLUME_PATH}   # bind the volume to DB_VOLUME_PATH on the host
+  # certs_volume:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     o: bind
+  #     device: ${APACHE_CERTS_VOLUME_PATH}   # bind the volume to APACHE_CERTS_VOLUME_PATH on the host
+  loader_volume:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${LOADER_VOLUME_PATH}   # bind the volume to LOADER_VOLUME_PATH on the host
+  workflow_volume:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${WORKFLOW_VOLUME_PATH}   # bind the volume to WORKFLOW_VOLUME_PATH on the host
+  minio_volume1:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${MINIO_VOLUME_PATH1}   # bind the volume to MINIO_VOLUME_PATH1 on the host
+  # minio_volume2:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     o: bind
+  #     device: ${MINIO_VOLUME_PATH2}   # bind the volume to MINIO_VOLUME_PATH2 on the host
+  # minio_volume3:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     o: bind
+  #     device: ${MINIO_VOLUME_PATH3}   # bind the volume to MINIO_VOLUME_PATH3 on the host
+  # minio_volume4:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     o: bind
+  #     device: ${MINIO_VOLUME_PATH4}   # bind the volume to MINIO_VOLUME_PATH4 on the host
+  vre_lite_log_volume:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${VRE_LITE_VOLUME_PATH}   # bind the volume to VRE_LITE_LOG_PATH on the host
+
+networks:
+  data_network: 
+    external: true   # Use an external network
+  minio_network: 
+    external: true   # Use an external network
+  traefik-public:
+    external: true   # Use an external network
+
+# TODO MODIFY traefik-public BY web_network WHEN PUTTING INTO PRODUCTION!!!
