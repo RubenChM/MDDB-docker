@@ -26,7 +26,9 @@ RUN unzip build.zip
 # Copy the built React app to nginx
 RUN cp -r /app/build/* /usr/share/nginx/html
 
-RUN sed -i "s/listen 80;/listen ${CLIENT_INNER_PORT};/g" \
+RUN sed -i -E "s/listen[[:space:]]+80;/listen ${CLIENT_INNER_PORT};/" \
+    /etc/nginx/conf.d/default.conf && \
+    sed -i -E "s/listen[[:space:]]+\[::\]:80;/listen [::]:${CLIENT_INNER_PORT};/" \
     /etc/nginx/conf.d/default.conf
 
 # Expose port ${CLIENT_INNER_PORT}
