@@ -278,10 +278,11 @@ services:
         - traefik.http.middlewares.minio-redirect.redirectregex.regex=^(.*)/minio-mddb$$
         - traefik.http.middlewares.minio-redirect.redirectregex.replacement=$${1}/minio-mddb/
         - traefik.http.middlewares.minio-redirect.redirectregex.permanent=true
+        - traefik.http.middlewares.minio-strip.stripprefix.prefixes=/minio-mddb
         - traefik.http.routers.minio.rule=PathPrefix(`/minio-mddb`)
         - traefik.http.routers.minio.entrypoints=websecure
         - traefik.http.routers.minio.service=minio
-        - traefik.http.routers.minio.middlewares=minio-redirect
+        - traefik.http.routers.minio.middlewares=minio-redirect,minio-strip
         - traefik.http.routers.minio.tls.domains[0].main=mmb.irbbarcelona.org
         - traefik.http.routers.minio.tls.certresolver=harica
       replicas: ${MINIO_REPLICAS}   # Specify the number of replicas for Docker Swarm
@@ -350,10 +351,11 @@ services:
         - traefik.http.middlewares.vrelite-redirect.redirectregex.regex=^(.*)/vrelite-mddb$$
         - traefik.http.middlewares.vrelite-redirect.redirectregex.replacement=$${1}/vrelite-mddb/
         - traefik.http.middlewares.vrelite-redirect.redirectregex.permanent=true
+        - traefik.http.middlewares.vrelite-strip.stripprefix.prefixes=/vrelite-mddb
         - traefik.http.routers.vrelite.rule=PathPrefix(`/vrelite-mddb`)
         - traefik.http.routers.vrelite.entrypoints=websecure
         - traefik.http.routers.vrelite.service=vrelite
-        - traefik.http.routers.vrelite.middlewares=vrelite-redirect
+        - traefik.http.routers.vrelite.middlewares=vrelite-redirect,vrelite-strip
         - traefik.http.routers.vrelite.tls.domains[0].main=mmb.irbbarcelona.org
         - traefik.http.routers.vrelite.tls.certresolver=harica
       replicas: ${VRE_LITE_REPLICAS}   # Specify the number of replicas for Docker Swarm
