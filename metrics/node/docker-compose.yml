@@ -96,3 +96,15 @@ services:
       - "9090:9090"
     networks:
       - metrics_network
+
+  # Blackbox exporter
+  blackbox-exporter:
+    image: prom/blackbox-exporter:latest
+    container_name: blackbox-exporter
+    restart: unless-stopped
+    volumes:
+      - ./blackbox.yml:/etc/blackbox_exporter/config.yml:ro
+    command:
+      - '--config.file=/etc/blackbox_exporter/config.yml'
+    networks:
+      - metrics_network

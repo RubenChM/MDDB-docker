@@ -65,4 +65,4 @@ case "${ACTION}" in
         ;;
 esac
 
-# scp -r * mddbr_dev:/home/rchaves/rest_monitor/
+# scp -r * mddbr-dev:/home/rchaves/metrics/
