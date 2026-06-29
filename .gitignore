@@ -9,5 +9,5 @@ client/build
 /logs
 __pycache__
 node_modules/
-package-lock.json
+/services_monitor/package-lock.json
 dev.*

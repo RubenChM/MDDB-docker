@@ -56,6 +56,9 @@ RUN echo "BASE_URL_DEVELOPMENT=${VRE_LITE_BASE_URL_DEVELOPMENT}" > /app/mddb-vre
 # Change working directory to /app/mddb-vre
 WORKDIR /app/mddb-vre
 
+# Copy package-lock.json to the working directory to fix dependencies versions
+COPY package-lock.json .
+
 # Install dependencies
 RUN npm install
 
