@@ -56,4 +56,3 @@ scrape_configs:
 # IMPORTANT: All application node metrics arrive via remote_write from each node's Prometheus
 # into this central Prometheus (remote write receiver enabled in docker-compose).
 # The 'node' and 'owner' labels added by each node's Prometheus config let you filter per machine.
-
