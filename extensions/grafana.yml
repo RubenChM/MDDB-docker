@@ -1,22 +1,32 @@
-# Central compose — deploy this on the central monitoring machine only.
+# Grafana extension — deploy this on the grafana monitoring machine only.
+# Run from the repo root, e.g.:
+#   docker compose -f docker-compose.yml -f extensions/grafana.yml up -d
 # Loki receives logs from all nodes; Grafana reads from it.
 
 networks:
   metrics_network:
-    external: true
+    external: true   # Shared network for the monitoring stack and API telemetry
 
 volumes:
   loki_data: {}
   grafana_data: {}
 
 services:
+  # Core services attach to the metrics network so the API can be scraped/telemetered
+  apache:
+    networks:
+      - metrics_network
+  rest:
+    networks:
+      - metrics_network
+
   # Collects logs from the API and forwards to Loki
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
     container_name: otel-collector
     restart: unless-stopped
     volumes:
-      - ./otel.yaml:/etc/otelcol/otel.yaml:ro
+      - ./metrics/grafana/otel.yaml:/etc/otelcol/otel.yaml:ro
     command: ["--config=/etc/otelcol/otel.yaml"]
     ports:
       - "4318:4318"   # OTLP HTTP
@@ -32,7 +42,7 @@ services:
     restart: unless-stopped
     volumes:
       - loki_data:/loki
-      - ./loki-config.yaml:/etc/loki/config.yaml:ro
+      - ./metrics/grafana/loki-config.yaml:/etc/loki/config.yaml:ro
     command:
       -validation.allow-structured-metadata
       -config.file=/etc/loki/config.yaml
@@ -48,9 +58,9 @@ services:
     restart: unless-stopped
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./grafana.ini:/etc/grafana/grafana.ini:ro
-      - ./provisioning:/etc/grafana/provisioning  # auto-provisions the data source
-      - ./provisioning/dashboards:/etc/grafana/provisioning/dashboards  # mount dashboards
+      - ./metrics/grafana/grafana.ini:/etc/grafana/grafana.ini:ro
+      - ./metrics/grafana/provisioning:/etc/grafana/provisioning  # auto-provisions the data source
+      - ./metrics/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards  # mount dashboards
     environment:
       - GF_SERVER_ROOT_URL=https://irb-dev.mddbr.eu/grafana
       - GF_SERVER_SERVE_FROM_SUB_PATH=true

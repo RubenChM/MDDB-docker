@@ -1,5 +1,5 @@
 # Prometheus stack template.
-# Set PROMETHEUS_MODE=central or PROMETHEUS_MODE=node before starting.
+# Set PROMETHEUS_MODE=local or PROMETHEUS_MODE=remote before starting.
 
 networks:
   metrics_network:
@@ -57,22 +57,23 @@ services:
     container_name: prometheus
     restart: unless-stopped
     volumes:
-      - ./prometheus-central.yml:/etc/prometheus/prometheus-central.yml:ro
-      - ./prometheus-node.yml:/etc/prometheus/prometheus-node.yml:ro
+      - ./metrics/exporters/prometheus-local.yml:/etc/prometheus/prometheus-local.yml:ro
+      - ./metrics/exporters/prometheus-remote.yml:/etc/prometheus/prometheus-remote.yml:ro
       - prometheus_data:/prometheus
     environment:
-      - PROMETHEUS_MODE=${PROMETHEUS_MODE:-node}
+      - PROMETHEUS_MODE=${PROMETHEUS_MODE:-remote}
+      - NODE=${NODE}
     entrypoint: 
       - /bin/sh
       - -c
       - >-
-        case "${PROMETHEUS_MODE:-node}" in
-          central)
-            cp /etc/prometheus/prometheus-central.yml /etc/prometheus/prometheus.yml
+        case "${PROMETHEUS_MODE:-remote}" in
+          local)
+            cp /etc/prometheus/prometheus-local.yml /etc/prometheus/prometheus.yml
             EXTRA_FLAGS="--web.enable-remote-write-receiver"
             ;;
-          node)
-            cp /etc/prometheus/prometheus-node.yml /etc/prometheus/prometheus.yml
+          remote)
+            cp /etc/prometheus/prometheus-remote.yml /etc/prometheus/prometheus.yml
             EXTRA_FLAGS=""
             ;;
           *)
@@ -88,7 +89,8 @@ services:
           --web.console.libraries=/etc/prometheus/console_libraries \
           --web.console.templates=/etc/prometheus/consoles \
           --web.enable-lifecycle \
-          $EXTRA_FLAGS
+          --enable-feature=expand-external-labels \
+          $$EXTRA_FLAGS
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
@@ -103,7 +105,7 @@ services:
     container_name: blackbox-exporter
     restart: unless-stopped
     volumes:
-      - ./blackbox.yml:/etc/blackbox_exporter/config.yml:ro
+      - ./metrics/exporters/blackbox.yml:/etc/blackbox_exporter/config.yml:ro
     command:
       - '--config.file=/etc/blackbox_exporter/config.yml'
     networks:

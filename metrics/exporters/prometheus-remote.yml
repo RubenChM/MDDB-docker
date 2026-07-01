@@ -5,7 +5,7 @@
 global:
   scrape_interval: 5m
   external_labels:
-    node: 'irb-dev'          # <- CHANGE: unique name for this node
+    node: '${NODE}'  # taken from the root .env NODE variable (expanded by Prometheus)
 
 scrape_configs:
   # Scrape node-exporter for host hardware metrics
