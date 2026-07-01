@@ -1,4 +1,6 @@
-# Prometheus stack template.
+# Prometheus stack to scrape metrics.
+# Run from the repo root, e.g.:
+#   docker compose -f docker-compose.yml -f extensions/metrics.yml up -d
 # Set PROMETHEUS_MODE=local or PROMETHEUS_MODE=remote before starting.
 
 networks:
