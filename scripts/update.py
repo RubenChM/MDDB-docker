@@ -64,7 +64,7 @@ class VersionChecker:
             return_code = process.poll()
             full_output = '\n'.join(output_lines)
 
-            if return_code == 0:
+            if return_code == 0 and 'return code 1' not in full_output.lower():
                 return True, full_output
             else:
                 return False, full_output
